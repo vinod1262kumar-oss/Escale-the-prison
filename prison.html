@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#100b0e">
+<meta name="description" content="Escape the Prison — an interactive Python coding adventure. Investigate your cell, discover clues, solve puzzles, and earn your freedom.">
+<title>Prison Cell | Escape the Prison</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:#100b0e;
+  --bg2:#190e13;
+  --panel:rgba(37,23,30,.88);
+  --panel2:rgba(53,28,39,.75);
+  --maroon:#702d43;
+  --red:#c94e65;
+  --orange:#ff9b54;
+  --orange-light:#ffc18a;
+  --text:#fff1e7;
+  --muted:#b6a2aa;
+  --border:rgba(255,155,120,.18);
+  --green:#a8cf8b;
+  --radius:17px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html{scroll-behavior:smooth}
+
+body{
+  min-height:100vh;
+  color:var(--text);
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(112,45,67,.22),transparent 50%),
+    radial-gradient(ellipse at 100% 65%,rgba(107,30,50,.12),transparent 40%),
+    var(--bg);
+  font-family:"DM Sans",sans-serif;
+  overflow-x:hidden;
+}
+
+button,input,textarea{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--orange);
+  outline-offset:3px;
+}
+a{color:inherit;text-decoration:none}
+
+.container{width:min(1440px,calc(100% - 32px));margin:auto}
+.mono{font-family:"Space Mono",monospace}
+
+.navbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(16,11,14,.92);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(18px);
+}
+
+.nav-inner{
+  min-height:72px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+}
+
+.brand{display:flex;align-items:center;gap:11px}
+.brand-icon{
+  width:41px;height:41px;
+  display:grid;place-items:center;
+  border:1px solid rgba(255,155,84,.35);
+  border-radius:12px;
+  background:linear-gradient(140deg,rgba(255,155,84,.18),rgba(112,45,67,.2));
+  color:var(--orange-light);
+  font-size:22px;
+}
+.brand-name{font-size:13px;font-weight:800;letter-spacing:1px}
+.brand-subtitle{
+  display:block;margin-top:4px;
+  color:var(--muted);font-size:9px;letter-spacing:1.4px;
+  font-family:"Space Mono",monospace;
+}
+.nav-links{display:flex;align-items:center;gap:22px}
+.nav-links a{color:var(--muted);font-size:12px;font-weight:700}
+.nav-links a:hover,.nav-links a.active{color:var(--orange-light)}
+.status{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--green)}
+.status-dot{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 10px #a8cf8b66}
+
+.page-heading{
+  padding:27px 0 21px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:20px;
+}
+.eyebrow{
+  display:flex;align-items:center;gap:8px;
+  color:var(--orange-light);
+  font:10px "Space Mono",monospace;
+  letter-spacing:1.7px;
+  text-transform:uppercase;
+}
+.eyebrow:before{content:"";width:18px;height:1px;background:var(--orange)}
+h1{font-size:clamp(26px,4vw,39px);letter-spacing:-1.5px;margin-top:10px}
+.page-heading p{margin-top:7px;color:var(--muted);font-size:13px;line-height:1.7}
+.level-badge{
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 13px;
+  background:rgba(112,45,67,.16);
+  color:var(--orange-light);
+  white-space:nowrap;
+  font:10px "Space Mono",monospace;
+}
+
+.glass{
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:linear-gradient(145deg,rgba(54,32,42,.9),rgba(26,17,22,.94));
+  box-shadow:0 18px 45px rgba(0,0,0,.19);
+}
+
+.game-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.75fr) minmax(280px,.8fr);
+  gap:17px;
+  align-items:start;
+}
+
+.scene-panel{overflow:hidden}
+.panel-heading{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:16px 18px;border-bottom:1px solid var(--border);
+}
+.panel-heading h2{font-size:13px;font-weight:800}
+.small-label{font:9px "Space Mono",monospace;color:var(--muted);letter-spacing:1px}
+.live-label{color:var(--green);font:9px "Space Mono",monospace}
+
+.room{
+  position:relative;
+  min-height:420px;
+  height:clamp(420px,47vw,565px);
+  overflow:hidden;
+  isolation:isolate;
+  background:#21171b;
+}
+
+/* Stylized room environment */
+.back-wall{
+  position:absolute;inset:0 0 27%;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.22),transparent 25%,transparent 75%,rgba(0,0,0,.3)),
+    repeating-linear-gradient(0deg,transparent 0 69px,rgba(255,255,255,.035) 70px 71px),
+    repeating-linear-gradient(90deg,transparent 0 94px,rgba(0,0,0,.12) 95px 97px),
+    linear-gradient(180deg,#392831,#2a1c22);
+}
+.back-wall:after{
+  content:"";
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.2));
+}
+.floor{
+  position:absolute;bottom:0;left:0;right:0;height:29%;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 34px,rgba(0,0,0,.19) 35px 37px),
+    repeating-linear-gradient(90deg,transparent 0 105px,rgba(0,0,0,.15) 106px 108px),
+    linear-gradient(180deg,#302126,#171115);
+  clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+}
+.floor:before{
+  content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:#6c4a50;opacity:.45;
+}
+
+.ceiling-light{
+  position:absolute;top:0;left:45%;width:150px;height:5px;
+  background:#ffc18a;box-shadow:0 0 45px 17px #e8895940;
+}
+.room-number{
+  position:absolute;top:16px;left:17px;z-index:3;
+  color:#dfc5c8;font:9px "Space Mono",monospace;letter-spacing:1px;
+}
+.room-warning{
+  position:absolute;top:13px;right:14px;z-index:3;
+  border:1px solid #d86a4838;border-radius:6px;
+  padding:7px 9px;background:#190e1399;
+  color:#ffb19c;font:9px "Space Mono",monospace;
+}
+
+/* Window and bars */
+.window-object{
+  position:absolute;top:13%;left:39%;width:23%;height:31%;
+  min-width:92px;min-height:90px;
+  border:7px solid #594047;
+  border-radius:3px;
+  background:
+    linear-gradient(90deg,transparent 46%,#38232d 47% 52%,transparent 53%),
+    linear-gradient(0deg,transparent 46%,#38232d 47% 52%,transparent 53%),
+    linear-gradient(180deg,#b97d7d,#744752 65%,#472c39);
+  box-shadow:0 0 28px #c94e6520,inset 0 0 15px #120a0d55;
+}
+.window-object:before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0 20%,#171014 21% 24%,transparent 25% 45%);
+  opacity:.8;
+}
+.window-object:after{
+  content:"";position:absolute;left:-13px;right:-13px;bottom:-8px;height:7px;
+  background:#76515a;
+}
+
+/* Bed */
+.bed-object{
+  position:absolute;left:4%;bottom:17%;width:40%;height:25%;
+  transform:skewY(-2deg);
+}
+.bed-head{
+  position:absolute;left:0;top:5%;width:13%;height:80%;
+  border:3px solid #584047;border-radius:3px;
+  background:linear-gradient(90deg,#37252b,#75535a,#35232a);
+}
+.bed-mattress{
+  position:absolute;left:10%;right:0;top:25%;height:36%;
+  border:2px solid #63444c;border-radius:5px;
+  background:linear-gradient(180deg,#b4a0a0,#6f5b65);
+  box-shadow:0 8px 0 #38232c;
+}
+.bed-blanket{
+  position:absolute;left:44%;right:2%;top:28%;height:30%;
+  border-radius:3px;background:linear-gradient(180deg,#77404e,#482735);
+}
+.bed-leg{
+  position:absolute;bottom:0;width:6px;height:37%;
+  background:#443139;border:1px solid #78515a;
+}
+.bed-leg.one{left:14%}.bed-leg.two{right:6%}
+
+/* Desk */
+.desk-object{
+  position:absolute;right:5%;bottom:18%;width:34%;height:25%;
+}
+.desk-top{
+  position:absolute;left:0;right:0;top:24%;height:12%;
+  border:2px solid #684449;
+  background:linear-gradient(180deg,#825453,#42282f);
+  transform:skewY(-2deg);
+}
+.desk-leg{
+  position:absolute;top:34%;bottom:0;width:7px;
+  background:linear-gradient(90deg,#38242b,#76515a,#39242b);
+}
+.desk-leg.left{left:12%}.desk-leg.right{right:12%}
+.desk-drawer{
+  position:absolute;left:22%;right:22%;top:39%;height:24%;
+  border:2px solid #644149;background:#472b34;
+}
+.desk-drawer:after{
+  content:"";position:absolute;top:45%;left:45%;width:10px;height:3px;
+  background:#d3a17a;
+}
+
+/* Terminal on desk */
+.terminal-object{
+  position:absolute;right:26%;bottom:42%;width:70px;height:56px;
+  border:4px solid #423038;border-radius:5px;
+  background:#11191a;box-shadow:0 0 17px #8fcf9b18;
+}
+.terminal-screen{
+  position:absolute;inset:4px;
+  display:flex;align-items:center;justify-content:center;
+  color:#a8cf8b;background:linear-gradient(135deg,#1a3028,#101b19);
+  font:9px "Space Mono",monospace;
+}
+.terminal-object:after{
+  content:"";position:absolute;left:24px;bottom:-8px;width:15px;height:5px;background:#574049;
+}
+
+/* Door */
+.door-object{
+  position:absolute;right:4%;top:17%;width:19%;height:50%;
+  min-width:64px;
+  border:5px solid #62414b;border-bottom:0;border-radius:4px 4px 0 0;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 13px,#171014 14px 19px),
+    linear-gradient(90deg,#4a303a,#78505a,#3b2730);
+  box-shadow:inset 0 0 25px #10090c88,0 0 20px #0003;
+}
+.door-object:before{
+  content:"";position:absolute;top:48%;right:12%;width:8px;height:8px;
+  border:2px solid #dca16f;border-radius:50%;background:#7d4a43;
+}
+.door-object:after{
+  content:"CELL 01";position:absolute;top:10%;left:0;right:0;
+  text-align:center;color:#d6b6ba;font:8px "Space Mono",monospace;
+}
+
+/* Interactive object controls */
+.room-object{
+  cursor:pointer;
+  transition:filter .2s,outline-color .2s;
+}
+.room-object:hover,.room-object:focus-visible{
+  filter:brightness(1.22);
+  outline:1px solid #ffb87b;
+  outline-offset:4px;
+}
+.room-object:focus{outline-offset:4px}
+.object-tip{
+  position:absolute;left:50%;bottom:105%;
+  transform:translateX(-50%);
+  padding:5px 7px;border:1px solid #ffb87b40;border-radius:5px;
+  color:#ffe0c4;background:#160e12;
+  white-space:nowrap;font:8px "Space Mono",monospace;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.room-object:hover .object-tip,.room-object:focus-visible .object-tip{opacity:1}
+
+.room-hint{
+  position:absolute;left:13px;bottom:12px;z-index:4;
+  padding:9px 11px;border:1px solid #ffb87b30;border-radius:8px;
+  color:#e7cbd0;background:#160e12df;
+  font:9px "Space Mono",monospace;
+}
+
+.scene-footer{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 17px;color:var(--muted);font:9px "Space Mono",monospace;
+  border-top:1px solid var(--border);
+}
+.scene-footer strong{color:var(--orange-light);font-weight:400}
+
+.sidebar{display:grid;gap:15px}
+.side-body{padding:16px}
+.player-row{display:flex;align-items:center;gap:12px}
+.avatar{
+  width:43px;height:43px;display:grid;place-items:center;flex-shrink:0;
+  border:1px solid #ff9b5440;border-radius:12px;
+  color:var(--orange-light);background:#ff9b5412;font-size:20px;
+}
+.player-name{font-size:13px;font-weight:800}
+.player-rank{margin-top:5px;color:var(--muted);font:9px "Space Mono",monospace}
+.xp-pill{
+  margin-left:auto;padding:7px 8px;border:1px solid var(--border);
+  border-radius:7px;color:var(--orange-light);font:9px "Space Mono",monospace;
+}
+.xp-track{height:5px;margin-top:16px;background:#ffffff0d;border-radius:20px;overflow:hidden}
+.xp-fill{height:100%;width:0;background:linear-gradient(90deg,var(--maroon),var(--orange));transition:width .3s}
+.xp-note{margin-top:9px;color:var(--muted);font-size:10px}
+
+.object-list{display:grid;gap:8px}
+.object-entry{
+  display:flex;align-items:center;gap:10px;padding:10px;
+  border:1px solid #ffffff0b;border-radius:10px;background:#ffffff03;
+}
+.object-entry .icon{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:#ff9b5410;color:var(--orange-light)}
+.object-entry strong{display:block;font-size:11px}
+.object-entry small{display:block;margin-top:4px;color:var(--muted);font-size:9px}
+.object-entry .state{margin-left:auto;color:#c19aa6;font:8px "Space Mono",monospace}
+.object-entry.found{border-color:#a8cf8b30}
+.object-entry.found .state{color:var(--green)}
+
+.mission-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.mission-item:last-child{margin-bottom:0}
+.check{
+  width:18px;height:18px;display:grid;place-items:center;flex-shrink:0;
+  border:1px solid #ffffff24;border-radius:5px;color:transparent;font-size:11px;
+}
+.mission-item.done .check{border-color:#a8cf8b66;color:#a8cf8b;background:#a8cf8b13}
+.mission-item strong{font-size:11px;font-weight:700}
+.mission-item p{margin-top:4px;color:var(--muted);font-size:10px;line-height:1.6}
+
+.action-button,.btn{
+  min-height:43px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:0 14px;border:1px solid transparent;border-radius:10px;
+  font-size:11px;font-weight:800;transition:.2s;
+}
+.primary{
+  color:#25140f;background:linear-gradient(135deg,var(--orange-light),var(--orange));
+}
+.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.secondary{border-color:var(--border);color:var(--text);background:#ffffff05}
+.secondary:hover{background:#ff9b5410;border-color:#ff9b5466}
+.full{width:100%}
+
+.terminal-panel{margin-top:17px;overflow:hidden}
+.terminal-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:15px 17px;border-bottom:1px solid var(--border);
+}
+.terminal-title{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800}
+.terminal-dots{display:flex;gap:5px}
+.terminal-dots i{width:7px;height:7px;border-radius:50%;background:#bd6a6a}
+.terminal-dots i:nth-child(2){background:#d6a35f}
+.terminal-dots i:nth-child(3){background:#8db58a}
+.terminal-status{font:9px "Space Mono",monospace;color:var(--green)}
+.terminal-content{padding:17px}
+.terminal-intro{color:var(--muted);font-size:11px;line-height:1.8;margin-bottom:12px}
+.terminal-intro code{color:var(--orange-light);font-family:"Space Mono",monospace}
+.terminal-output{
+  min-height:110px;max-height:190px;overflow:auto;
+  padding:13px;border:1px solid #a8cf8b1c;border-radius:9px;
+  color:#d7e7d3;background:#0c1210;
+  font:11px/1.8 "Space Mono",monospace;white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.terminal-line{color:#a8cf8b}
+.terminal-error{color:#ff9999}
+.terminal-success{color:#ffd09b}
+.terminal-form{display:flex;gap:8px;margin-top:11px}
+.terminal-form input{
+  width:100%;min-width:0;min-height:45px;padding:10px 12px;
+  border:1px solid #a8cf8b2b;border-radius:9px;
+  color:#cde7c4;background:#0c1210;
+  font:12px "Space Mono",monospace;
+}
+.terminal-form button{flex-shrink:0}
+.terminal-help{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.command-chip{
+  min-height:34px;padding:6px 9px;border:1px solid var(--border);border-radius:7px;
+  color:#d7b5c0;background:#ffffff04;font:9px "Space Mono",monospace;
+}
+.command-chip:hover{border-color:#ff9b5477;color:var(--orange-light)}
+
+.log-panel{margin-top:17px}
+.log-body{padding:15px}
+.log-list{display:grid;gap:10px}
+.log-line{display:flex;gap:9px;color:var(--muted);font-size:10px;line-height:1.6}
+.log-line span{color:var(--orange-light);font-family:"Space Mono",monospace;flex-shrink:0}
+.log-empty{color:var(--muted);font-size:11px}
+
+.bottom-actions{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:22px 0 28px;
+}
+.bottom-actions p{color:var(--muted);font-size:10px;line-height:1.7}
+.action-group{display:flex;flex-wrap:wrap;gap:9px}
+
+.modal-backdrop{
+  position:fixed;inset:0;z-index:100;
+  display:none;align-items:center;justify-content:center;
+  padding:18px;background:#080508d9;backdrop-filter:blur(8px);
+}
+.modal-backdrop.open{display:flex}
+.modal{
+  width:min(440px,100%);padding:23px;
+  border:1px solid #ff9b5444;border-radius:18px;
+  background:linear-gradient(145deg,#351e29,#160f13);
+  box-shadow:0 25px 90px #0009;
+}
+.modal-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.modal-top h2{font-size:18px}
+.close-modal{
+  width:35px;height:35px;border:1px solid var(--border);border-radius:9px;
+  color:var(--text);background:#ffffff05;font-size:20px;
+}
+.modal-description{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.8}
+.modal-content{margin-top:17px}
+.modal-content label{display:block;margin-bottom:8px;color:var(--orange-light);font-size:11px}
+.modal-input{
+  width:100%;min-height:47px;padding:12px;border:1px solid var(--border);
+  border-radius:9px;color:var(--text);background:#100b0e;
+}
+.modal-feedback{margin-top:12px;min-height:20px;color:var(--muted);font-size:11px;line-height:1.6}
+.modal-actions{display:flex;gap:9px;margin-top:15px}
+.modal-actions button{flex:1}
+
+.toast{
+  position:fixed;right:18px;bottom:18px;z-index:150;
+  width:min(350px,calc(100% - 36px));padding:15px 17px;
+  border:1px solid #ff9b5444;border-radius:13px;
+  background:#21141bef;box-shadow:0 15px 45px #0006;
+  opacity:0;transform:translateY(12px);pointer-events:none;transition:.22s;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast strong{display:block;color:var(--orange-light);font-size:12px}
+.toast p{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.6}
+
+.footer{border-top:1px solid var(--border);padding:20px 0;color:var(--muted);font-size:10px}
+.footer-inner{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.footer-brand{color:#e8c4aa;font:9px "Space Mono",monospace;letter-spacing:1px}
+
+@media(max-width:1000px){
+  .game-layout{grid-template-columns:minmax(0,1.4fr) minmax(250px,.8fr)}
+  .room{min-height:380px;height:430px}
+  .nav-links{gap:13px}
+}
+@media(max-width:760px){
+  .nav-inner{flex-wrap:wrap;padding:12px 0}
+  .nav-links{order:3;width:100%;justify-content:space-between;padding-top:6px}
+  .nav-links a{font-size:11px}
+  .status{font-size:9px}
+  .game-layout{grid-template-columns:1fr}
+  .room{height:clamp(370px,90vw,490px);min-height:370px}
+  .sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sidebar .mission-card{grid-column:1/-1}
+}
+@media(max-width:480px){
+  .container{width:calc(100% - 22px)}
+  .brand-name{font-size:11px}
+  .brand-subtitle{font-size:8px}
+  .brand-icon{width:36px;height:36px}
+  .status{display:none}
+  .page-heading{align-items:flex-start;flex-direction:column}
+  h1{font-size:29px}
+  .level-badge{font-size:9px}
+  .panel-heading{padding:13px}
+  .room{height:390px;min-height:390px}
+  .window-object{left:35%;width:27%;height:27%}
+  .bed-object{left:2%;width:43%}
+  .desk-object{right:3%;width:36%}
+  .door-object{right:2%;width:19%}
+  .terminal-object{width:55px;height:46px;right:25%}
+  .room-hint{font-size:8px;max-width:70%;line-height:1.6}
+  .sidebar{grid-template-columns:1fr}
+  .sidebar .mission-card{grid-column:auto}
+  .terminal-form{flex-wrap:wrap}
+  .terminal-form button{width:100%}
+  .bottom-actions{align-items:flex-start;flex-direction:column}
+  .action-group{width:100%}
+  .action-group button{flex:1}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+
+<body>
+<header class="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="brand" aria-label="Return to Escape the Prison home">
+      <div class="brand-icon" aria-hidden="true">⌘</div>
+      <div>
+        <div class="brand-name">ESCAPE THE PRISON</div>
+        <span class="brand-subtitle">PYTHON ADVENTURE</span>
+      </div>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="#room" class="active">Prison Room</a>
+      <a href="#terminal">Terminal</a>
+      <a href="#mission">Mission</a>
+    </nav>
+
+    <div class="status"><span class="status-dot"></span> GAME ONLINE</div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="page-heading">
+    <div>
+      <div class="eyebrow">LEVEL 01 · CONTAINMENT BLOCK</div>
+      <h1>THE PRISON CELL<span style="color:var(--orange)">.</span></h1>
+      <p>Investigate the room. Collect clues. Use your code to find a way out.</p>
+    </div>
+    <div class="level-badge">CHAPTER 01 / <span id="levelStatus">IN PROGRESS</span></div>
+  </section>
+
+  <div class="game-layout">
+    <section class="glass scene-panel" id="room">
+      <div class="panel-heading">
+        <h2>◈ CELL ENVIRONMENT</h2>
+        <span class="live-label">● INTERACTIVE SCENE</span>
+      </div>
+
+      <div class="room" aria-label="Interactive illustrated prison room">
+        <div class="back-wall"></div>
+        <div class="ceiling-light"></div>
+        <div class="floor"></div>
+
+        <div class="room-number">BLOCK A / CELL 001</div>
+        <div class="room-warning">RESTRICTED ZONE</div>
+
+        <button class="window-object room-object" data-object="window" aria-label="Investigate barred window" type="button">
+          <span class="object-tip">BARRED WINDOW</span>
+        </button>
+
+        <button class="bed-object room-object" data-object="bed" aria-label="Investigate prison bed" type="button">
+          <span class="object-tip">OLD BED</span>
+          <span class="bed-head"></span>
+          <span class="bed-mattress"></span>
+          <span class="bed-blanket"></span>
+          <span class="bed-leg one"></span>
+          <span class="bed-leg two"></span>
+        </button>
+
+        <button class="desk-object room-object" data-object="desk" aria-label="Investigate desk and drawer" type="button">
+          <span class="object-tip">WOODEN DESK</span>
+          <span class="desk-top"></span>
+          <span class="desk-leg left"></span>
+          <span class="desk-leg right"></span>
+          <span class="desk-drawer"></span>
+        </button>
+
+        <button class="terminal-object room-object" data-object="computer" aria-label="Investigate abandoned computer" type="button">
+          <span class="object-tip">ABANDONED TERMINAL</span>
+          <span class="terminal-screen">>_</span>
+        </button>
+
+        <button class="door-object room-object" data-object="door" aria-label="Investigate locked cell door" type="button">
+          <span class="object-tip">LOCKED EXIT</span>
+        </button>
+
+        <div class="room-hint">TIP: TAP OBJECTS TO INVESTIGATE</div>
+      </div>
+
+      <div class="scene-footer">
+        <span>ENVIRONMENT</span>
+        <strong id="sceneStatus">4 OBJECTS UNDISCOVERED</strong>
+        <span>◈ LEVEL 01</span>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="glass">
+        <div class="panel-heading"><h2>◈ PLAYER PROFILE</h2><span class="small-label">LOCAL SAVE</span></div>
+        <div class="side-body">
+          <div class="player-row">
+            <div class="avatar">♟</div>
+            <div>
+              <div class="player-name">The Prisoner</div>
+              <div class="player-rank" id="rankText">ROOKIE ESCAPE ARTIST</div>
+            </div>
+            <div class="xp-pill"><span id="xpValue">0</span> XP</div>
+          </div>
+          <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+          <p class="xp-note" id="xpNote">Complete tasks to earn experience.</p>
+        </div>
+      </section>
+
+      <section class="glass">
+        <div class="panel-heading"><h2>▣ INVENTORY</h2><span class="small-label" id="inventoryCount">0 ITEMS</span></div>
+        <div class="side-body">
+          <div class="object-list" id="inventoryList">
+            <div class="object-entry">
+              <div class="icon">□</div>
+              <div><strong>Empty inventory</strong><small>Investigate objects to find clues.</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass mission-card" id="mission">
+        <div class="panel-heading"><h2>◈ MISSION CONTROL</h2><span class="small-label">001</span></div>
+        <div class="side-body">
+          <div class="mission-item" id="taskInspect">
+            <span class="check">✓</span>
+            <div><strong>Inspect your surroundings</strong><p>Find clues hidden in the cell.</p></div>
+          </div>
+          <div class="mission-item" id="taskCode">
+            <span class="check">✓</span>
+            <div><strong>Activate the terminal</strong><p>Use your first Python command.</p></div>
+          </div>
+          <div class="mission-item" id="taskDesk">
+            <span class="check">✓</span>
+            <div><strong>Discover the access code</strong><p>Investigate the desk for a clue.</p></div>
+          </div>
+          <div class="mission-item" id="taskDoor">
+            <span class="check">✓</span>
+            <div><strong>Unlock the cell door</strong><p>Enter the discovered code.</p></div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <section class="glass terminal-panel" id="terminal">
+    <div class="terminal-toolbar">
+      <div class="terminal-title">
+        <span class="terminal-dots"><i></i><i></i><i></i></span>
+        PYTHON TERMINAL
+      </div>
+      <span class="terminal-status">● SIMULATION READY</span>
+    </div>
+    <div class="terminal-content">
+      <p class="terminal-intro">
+        Welcome to the abandoned terminal. Enter <code>help</code> to see available commands.
+        Complete the first challenge by entering <code>print("I will escape!")</code>.
+        This is a safe, simulated Python learning terminal; it does not execute arbitrary Python.
+      </p>
+
+      <div class="terminal-output" id="terminalOutput" role="log" aria-live="polite">ESCAPE OS [Version 1.0]
+Type help to see available commands.
+Mission: make the terminal print "I will escape!"</div>
+
+      <form class="terminal-form" id="terminalForm">
+        <input id="terminalInput" type="text" maxlength="180" autocomplete="off" spellcheck="false" aria-label="Enter a simulated Python command" placeholder='print("I will escape!")'>
+        <button class="action-button primary" type="submit">RUN COMMAND ↗</button>
+      </form>
+
+      <div class="terminal-help">
+        <button type="button" class="command-chip" data-command="help">help</button>
+        <button type="button" class="command-chip" data-command='print("I will escape!")'>print(...)</button>
+        <button type="button" class="command-chip" data-command="look">look</button>
+        <button type="button" class="command-chip" data-command="inventory">inventory</button>
+        <button type="button" class="command-chip" data-command="status">status</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="glass log-panel">
+    <div class="panel-heading"><h2>▤ DISCOVERY LOG</h2><span class="small-label">RECENT EVENTS</span></div>
+    <div class="log-body">
+      <div class="log-list" id="logList" aria-live="polite">
+        <p class="log-empty">Your adventure has begun. Discoveries will appear here.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="bottom-actions">
+    <p>Progress is saved locally in this browser when storage is available.<br>Python commands are simulated for this learning game.</p>
+    <div class="action-group">
+      <button type="button" class="action-button secondary" id="resetButton">↻ RESET GAME</button>
+      <a href="index.html" class="action-button primary">← HOME</a>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">ESCAPE THE PRISON // PYTHON ADVENTURE</div>
+    <p>Learn to code. Solve the mystery. Find your freedom.</p>
+    <p>© <span id="year"></span> Escape the Prison</p>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <section class="modal">
+    <div class="modal-top">
+      <h2 id="modalTitle">INVESTIGATION</h2>
+      <button type="button" class="close-modal" id="closeModal" aria-label="Close dialog">×</button>
+    </div>
+    <p class="modal-description" id="modalDescription"></p>
+    <div class="modal-content" id="modalContent"></div>
+    <div class="modal-feedback" id="modalFeedback" aria-live="polite"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <strong id="toastTitle">MISSION CONTROL</strong>
+  <p id="toastMessage"></p>
+</div>
+
+<script>
+"use strict";
+
+/* -------------------------------------------------------
+   ESCAPE THE PRISON
+   Browser-based game state and simulated Python terminal.
+------------------------------------------------------- */
+
+const $ = (selector) => document.querySelector(selector);
+
+const OBJECTS = {
+  bed: {
+    title: "OLD PRISON BED",
+    description: "The mattress is worn out, but something seems tucked beneath its edge.",
+    item: "Folded Note",
+    icon: "▤",
+    clue: 'A folded note reads: "The desk remembers what the guards forget."'
+  },
+  window: {
+    title: "BARRED WINDOW",
+    description: "You can see the evening sky through thick metal bars. The window cannot be opened from here.",
+    item: "Window Observation",
+    icon: "▥",
+    clue: "The window offers a view of the cell block. There is no safe exit here; you need to solve the door puzzle."
+  },
+  desk: {
+    title: "WOODEN DESK",
+    description: "Inside the drawer, you discover a small card with an access code.",
+    item: "Access Card",
+    icon: "▣",
+    clue: "ACCESS CODE DISCOVERED: 4312. Keep this code for the locked door."
+  },
+  computer: {
+    title: "ABANDONED TERMINAL",
+    description: "The old computer still has power. Its screen displays a Python prompt.",
+    item: "Terminal Access",
+    icon: "⌨",
+    clue: 'The terminal is active. Your first challenge is print("I will escape!").'
+  },
+  door: {
+    title: "CONTAINMENT DOOR",
+    description: "A heavy steel door blocks the exit. A keypad is mounted beside the frame.",
+    item: null,
+    icon: "▤",
+    clue: "The keypad needs a four-digit access code. Investigate the desk to discover it."
+  }
+};
+
+const INITIAL_STATE = {
+  xp: 0,
+  found: [],
+  inventory: [],
+  codeComplete: false,
+  doorUnlocked: false,
+  escaped: false,
+  logs: []
+};
+
+let state = loadState();
+let toastTimer = null;
+let activeObject = null;
+let lastFocusedElement = null;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem("escapePrisonCellSaveV1");
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (
+        saved &&
+        Array.isArray(saved.found) &&
+        Array.isArray(saved.inventory) &&
+        Array.isArray(saved.logs) &&
+        Number.isFinite(saved.xp)
+      ) {
+        return {
+          ...INITIAL_STATE,
+          ...saved,
+          xp: Math.max(0, Math.min(100, saved.xp))
+        };
+      }
+    }
+  } catch (error) {
+    // Play normally if browser storage is disabled or invalid.
+  }
+  return structuredCloneSafe(INITIAL_STATE);
+}
+
+function structuredCloneSafe(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function saveState() {
+  try {
+    localStorage.setItem("escapePrisonCellSaveV1", JSON.stringify(state));
+  } catch (error) {
+    // The current session remains playable without persistent storage.
+  }
+}
+
+function addLog(message) {
+  const time = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  state.logs.unshift({ time, message });
+  state.logs = state.logs.slice(0, 12);
+  renderLog();
+  saveState();
+}
+
+function showToast(title, message) {
+  $("#toastTitle").textContent = title;
+  $("#toastMessage").textContent = message;
+
+  const toast = $("#toast");
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 3500);
+}
+
+function awardXP(amount, reason) {
+  const oldXP = state.xp;
+  state.xp = Math.min(100, state.xp + amount);
+  const earned = state.xp - oldXP;
+
+  if (earned > 0) {
+    addLog("+" + earned + " XP — " + reason);
+    showToast("EXPERIENCE EARNED", "+" + earned + " XP: " + reason);
+  }
+
+  renderProgress();
+  saveState();
+}
+
+function markTaskDone(id, done = true) {
+  const task = document.getElementById(id);
+  if (task) task.classList.toggle("done", done);
+}
+
+function renderProgress() {
+  $("#xpValue").textContent = state.xp;
+  $("#xpFill").style.width = state.xp + "%";
+  $("#xpNote").textContent =
+    state.xp >= 100
+      ? "Maximum demo XP reached!"
+      : (100 - state.xp) + " XP until the next milestone.";
+
+  $("#rankText").textContent =
+    state.xp >= 100 ? "CELL ESCAPE ARTIST" :
+    state.xp >= 50 ? "SKILLED INVESTIGATOR" :
+    state.xp >= 20 ? "JUNIOR ESCAPE ARTIST" :
+    "ROOKIE ESCAPE ARTIST";
+
+  markTaskDone("taskInspect", state.found.includes("bed") && state.found.includes("window"));
+  markTaskDone("taskCode", state.codeComplete);
+  markTaskDone("taskDesk", state.found.includes("desk"));
+  markTaskDone("taskDoor", state.doorUnlocked);
+
+  $("#levelStatus").textContent =
+    state.escaped ? "COMPLETED" :
+    state.doorUnlocked ? "EXIT OPEN" :
+    "IN PROGRESS";
+
+  $("#sceneStatus").textContent =
+    state.escaped ? "ESCAPE COMPLETE" :
+    state.doorUnlocked ? "EXIT UNLOCKED" :
+    (5 - state.found.length) + " OBJECTS UNDISCOVERED";
+
+  renderInventory();
+  saveState();
+}
+
+function renderInventory() {
+  const container = $("#inventoryList");
+  container.replaceChildren();
+
+  if (state.inventory.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "object-entry";
+
+    const icon = document.createElement("div");
+    icon.className = "icon";
+    icon.textContent = "□";
+
+    const details = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = "Empty inventory";
+    const subtitle = document.createElement("small");
+    subtitle.textContent = "Investigate objects to find clues.";
+
+    details.append(title, subtitle);
+    empty.append(icon, details);
+    container.append(empty);
+  } else {
+    state.inventory.forEach((item) => {
+      const data = Object.values(OBJECTS).find((obj) => obj.item === item);
+
+      const row = document.createElement("div");
+      row.className = "object-entry found";
+
+      const icon = document.createElement("div");
+      icon.className = "icon";
+      icon.textContent = data ? data.icon : "▣";
+
+      const details = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = item;
+      const subtitle = document.createElement("small");
+      subtitle.textContent = "Clue collected";
+
+      const status = document.createElement("span");
+      status.className = "state";
+      status.textContent = "FOUND";
+
+      details.append(title, subtitle);
+      row.append(icon, details, status);
+      container.append(row);
+    });
+  }
+
+  $("#inventoryCount").textContent =
+    state.inventory.length + (state.inventory.length === 1 ? " ITEM" : " ITEMS");
+}
+
+function renderLog() {
+  const container = $("#logList");
+  container.replaceChildren();
+
+  if (!state.logs.length) {
+    const empty = document.createElement("p");
+    empty.className = "log-empty";
+    empty.textContent = "Your adventure has begun. Discoveries will appear here.";
+    container.append(empty);
+    return;
+  }
+
+  state.logs.forEach((entry) => {
+    const row = document.createElement("div");
+    row.className = "log-line";
+
+    const time = document.createElement("span");
+    time.textContent = entry.time;
+
+    const message = document.createElement("p");
+    message.textContent = entry.message;
+
+    row.append(time, message);
+    container.append(row);
+  });
+}
+
+function addItem(item) {
+  if (!item || state.inventory.includes(item)) return false;
+  state.inventory.push(item);
+  return true;
+}
+
+function investigate(key) {
+  const data = OBJECTS[key];
+  if (!data) return;
+
+  activeObject = key;
+  lastFocusedElement = document.activeElement;
+
+  $("#modalTitle").textContent = data.title;
+  $("#modalDescription").textContent = data.description;
+  $("#modalFeedback").textContent = "";
+  $("#modalContent").replaceChildren();
+  $("#modalActions").replaceChildren();
+
+  if (key === "door") {
+    if (state.escaped) {
+      $("#modalDescription").textContent =
+        "The door stands open. You have completed this demo escape mission.";
+      addModalButton("MISSION COMPLETE", "primary", closeModal);
+    } else if (state.doorUnlocked) {
+      $("#modalDescription").textContent =
+        "The keypad turns green and the cell door slides open. You have a clear path out.";
+      addModalButton("ESCAPE THE CELL →", "primary", completeEscape);
+    } else {
+      const label = document.createElement("label");
+      label.htmlFor = "accessCode";
+      label.textContent = "ENTER FOUR-DIGIT ACCESS CODE";
+
+      const input = document.createElement("input");
+      input.className = "modal-input";
+      input.id = "accessCode";
+      input.inputMode = "numeric";
+      input.maxLength = 4;
+      input.placeholder = "••••";
+      input.autocomplete = "off";
+
+      const unlock = document.createElement("button");
+      unlock.type = "button";
+      unlock.className = "action-button primary";
+      unlock.textContent = "UNLOCK DOOR";
+      unlock.addEventListener("click", () => attemptUnlock(input.value));
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") attemptUnlock(input.value);
+      });
+
+      $("#modalContent").append(label, input);
+      $("#modalActions").append(unlock);
+
+      if (!state.found.includes("desk")) {
+        $("#modalFeedback").textContent =
+          "Hint: search the desk for the access card.";
+      }
+    }
+  } else if (key === "computer") {
+    $("#modalDescription").textContent =
+      "The terminal is online. Your Python training console is ready below.";
+    addModalButton("OPEN PYTHON TERMINAL ↗", "primary", () => {
+      closeModal();
+      $("#terminal").scrollIntoView({ behavior: "smooth", block: "start" });
+      $("#terminalInput").focus({ preventScroll: true });
+    });
+  } else {
+    const clue = document.createElement("p");
+    clue.className = "modal-description";
+    clue.textContent = data.clue;
+    $("#modalContent").append(clue);
+
+    if (state.found.includes(key)) {
+      $("#modalFeedback").textContent = "You have already investigated this object.";
+    } else {
+      addModalButton("COLLECT CLUE", "primary", () => collectClue(key));
+    }
+  }
+
+  addModalButton("CLOSE", "secondary", closeModal);
+  $("#modalBackdrop").classList.add("open");
+
+  const firstInput = $("#modalContent input");
+  if (firstInput) firstInput.focus();
+  else $("#modalActions button")?.focus();
+}
+
+function addModalButton(text, style, action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "action-button " + style;
+  button.textContent = text;
+  button.addEventListener("click", action);
+  $("#modalActions").append(button);
+}
+
+function closeModal() {
+  $("#modalBackdrop").classList.remove("open");
+  activeObject = null;
+
+  if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+    lastFocusedElement.focus({ preventScroll: true });
+  }
+}
+
+function collectClue(key) {
+  const data = OBJECTS[key];
+  if (!data || state.found.includes(key)) return;
+
+  state.found.push(key);
+  addItem(data.item);
+  closeModal();
+
+  const rewards = { bed: 10, window: 5, desk: 20, computer: 10 };
+  awardXP(rewards[key] || 5, "Investigated " + data.title.toLowerCase());
+
+  addLog(data.clue);
+  renderProgress();
+
+  showToast("CLUE DISCOVERED", data.item + " added to your inventory.");
+
+  if (key === "desk") {
+    showToast("ACCESS CODE FOUND", "Your access code is 4312. Investigate the door.");
+  }
+}
+
+function attemptUnlock(rawCode) {
+  const code = String(rawCode).trim();
+
+  if (!/^\d{4}$/.test(code)) {
+    $("#modalFeedback").textContent = "Enter a valid four-digit code.";
+    return;
+  }
+
+  if (!state.found.includes("desk")) {
+    $("#modalFeedback").textContent =
+      "You haven't found the access code yet. Investigate the desk first.";
+    return;
+  }
+
+  if (code !== "4312") {
+    $("#modalFeedback").textContent = "ACCESS DENIED. Check the code on your access card.";
+    return;
+  }
+
+  state.doorUnlocked = true;
+  closeModal();
+  awardXP(20, "Unlocked the containment door");
+  addLog("The cell door is now unlocked.");
+  renderProgress();
+  showToast("ACCESS GRANTED", "The door is unlocked. Investigate it again to escape.");
+}
+
+function completeEscape() {
+  if (!state.doorUnlocked || state.escaped) {
+    closeModal();
+    return;
+  }
+
+  state.escaped = true;
+  closeModal();
+  awardXP(25, "Completed Chapter 01");
+  addLog("MISSION COMPLETE — You escaped the first cell.");
+  renderProgress();
+
+  showToast("CHAPTER COMPLETE", "You escaped the cell! Chapter 01 completed.");
+
+  $("#sceneStatus").textContent = "ESCAPE COMPLETE";
+  $("#levelStatus").textContent = "COMPLETED";
+  $("#door").disabled = true;
+}
+
+function terminalPrint(text, className = "") {
+  const output = $("#terminalOutput");
+  const line = document.createElement("div");
+  if (className) line.className = className;
+  line.textContent = text;
+  output.append(line);
+  output.scrollTop = output.scrollHeight;
+}
+
+function runCommand(raw) {
+  const command = raw.trim();
+  if (!command) return;
+
+  terminalPrint(">>> " + command, "terminal-line");
+
+  const normalized = command.toLowerCase();
+
+  if (normalized === "help") {
+    terminalPrint("AVAILABLE COMMANDS:");
+    terminalPrint('print("I will escape!") — complete your first Python task');
+    terminalPrint("look — inspect your surroundings");
+    terminalPrint("inventory — display collected items");
+    terminalPrint("status — show your current progress");
+    terminalPrint("clear — clear the terminal");
+    terminalPrint("hint — receive a mission hint");
+  } else if (normalized === "look") {
+    terminalPrint("You are in Cell 001. A bed, barred window, desk, computer, and locked door are visible.");
+    terminalPrint("Tap objects in the room to investigate them.");
+  } else if (normalized === "inventory") {
+    terminalPrint(
+      state.inventory.length
+        ? "INVENTORY: " + state.inventory.join(", ")
+        : "Your inventory is empty. Investigate the room to collect clues."
+    );
+  } else if (normalized === "status") {
+    terminalPrint("XP: " + state.xp + "/100");
+    terminalPrint("Discovered objects: " + state.found.length + "/4");
+    terminalPrint("Python task: " + (state.codeComplete ? "COMPLETED" : "INCOMPLETE"));
+    terminalPrint("Door: " + (state.doorUnlocked ? "UNLOCKED" : "LOCKED"));
+  } else if (normalized === "clear") {
+    $("#terminalOutput").replaceChildren();
+    terminalPrint("ESCAPE OS [Version 1.0]");
+    terminalPrint("Terminal cleared. Type help for commands.");
+    return;
+  } else if (normalized === "hint") {
+    terminalPrint(
+      state.codeComplete
+        ? "Next: investigate the desk, collect the access card, and unlock the door."
+        : 'Try print("I will escape!") to complete your first coding task.'
+    );
+  } else if (isCorrectPrintCommand(command)) {
+    terminalPrint("I will escape!", "terminal-success");
+
+    if (!state.codeComplete) {
+      state.codeComplete = true;
+      awardXP(25, "Completed the first Python challenge");
+      addLog("Python mission completed: print statement executed.");
+      renderProgress();
+      showToast("PYTHON CHALLENGE COMPLETE", "You earned XP for your first coding task.");
+    } else {
+      terminalPrint("Challenge already completed. Try another command from help.");
+    }
+  } else {
+    terminalPrint("Command not recognized by this training simulator.", "terminal-error");
+    terminalPrint('Tip: try print("I will escape!") or enter help.');
+  }
+}
+
+function isCorrectPrintCommand(command) {
+  // Accept common quote styles and optional spaces around the argument.
+  return /^print\s*\(\s*(["'])I will escape!\1\s*\)\s*;?$/.test(command);
+}
+
+$("#terminalForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const input = $("#terminalInput");
+  runCommand(input.value);
+  input.value = "";
+  input.focus();
+});
+
+document.querySelectorAll("[data-command]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const command = button.dataset.command;
+    $("#terminalInput").value = command;
+    runCommand(command);
+    $("#terminalInput").value = "";
+  });
+});
+
+document.querySelectorAll("[data-object]").forEach((button) => {
+  button.addEventListener("click", () => investigate(button.dataset.object));
+});
+
+$("#closeModal").addEventListener("click", closeModal);
+
+$("#modalBackdrop").addEventListener("click", (event) => {
+  if (event.target === $("#modalBackdrop")) closeModal();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && $("#modalBackdrop").classList.contains("open")) {
+    closeModal();
+  }
+});
+
+$("#resetButton").addEventListener("click", () => {
+  const confirmed = window.confirm(
+    "Reset your game progress, inventory, clues, and XP? This cannot be undone."
+  );
+
+  if (!confirmed) return;
+
+  state = structuredCloneSafe(INITIAL_STATE);
+  saveState();
+  renderProgress();
+  renderLog();
+
+  $("#terminalOutput").replaceChildren();
+  terminalPrint("ESCAPE OS [Version 1.0]");
+  terminalPrint("Type help to see available commands.");
+  terminalPrint('Mission: make the terminal print "I will escape!"');
+
+  showToast("GAME RESET", "Your prison adventure has restarted.");
+});
+
+$("#year").textContent = new Date().getFullYear();
+
+/* Restore a saved session. */
+renderProgress();
+renderLog();
+
+if (state.codeComplete) {
+  terminalPrint("Previously completed: print challenge.");
+}
+if (state.escaped) {
+  terminalPrint("CHAPTER 01 COMPLETED — Welcome back, escape artist.", "terminal-success");
+}
+</script>
+</body>
+  </html>
