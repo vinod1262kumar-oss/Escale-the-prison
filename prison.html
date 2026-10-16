@@ -1622,3 +1622,1134 @@ h1 {
   <strong id="toastTitle">MISSION CONTROL</strong>
   <p id="toastMessage"></p>
   </div>
+  <script>
+(() => {
+  "use strict";
+
+  const SAVE_KEY = "escapePrisonCellSaveV1";
+
+  const levels = [
+    { name: "The Prison Cell", code: "4312" },
+    { name: "Guard Station", code: "2580" },
+    { name: "Maintenance Tunnel", code: "7046" },
+    { name: "Security Hub", code: "1963" },
+    { name: "The Final Exit", code: "8251" }
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  const state = {
+    level: 1,
+    highestUnlocked: 1,
+    completedLevels: [],
+    xp: 0,
+    inventory: [],
+    discovered: [],
+    deskClue: false,
+    terminalComplete: false,
+    paused: false,
+    platformMode: false,
+    gameWon: false,
+    playerX: 45,
+    playerY: 0,
+    velocityY: 0,
+    grounded: true,
+    targetObject: null,
+    walkingDirection: 0
+  };
+
+  const objectPositions = {
+    window: 50,
+    bed: 24,
+    desk: 75,
+    computer: 67,
+    door: 92
+  };
+
+  const objectNames = {
+    window: "Window",
+    bed: "Bed",
+    desk: "Desk",
+    computer: "Computer",
+    door: "Exit Door"
+  };
+
+  const keys = {};
+  let animationFrame = null;
+  let lastFrame = 0;
+  let modalOpen = false;
+
+  function saveGame() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        level: state.level,
+        highestUnlocked: state.highestUnlocked,
+        completedLevels: state.completedLevels,
+        xp: state.xp,
+        inventory: state.inventory,
+        discovered: state.discovered,
+        deskClue: state.deskClue,
+        terminalComplete: state.terminalComplete,
+        gameWon: state.gameWon
+      }));
+    } catch (error) {
+      console.warn("Progress could not be saved.", error);
+    }
+  }
+
+  function loadGame() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+      if (!saved || typeof saved !== "object") return;
+
+      state.level = Math.max(
+        1,
+        Math.min(levels.length, Number(saved.level) || 1)
+      );
+
+      state.highestUnlocked = Math.max(
+        1,
+        Math.min(levels.length, Number(saved.highestUnlocked) || 1)
+      );
+
+      state.completedLevels = Array.isArray(saved.completedLevels)
+        ? saved.completedLevels.filter(n =>
+            Number.isInteger(n) && n >= 1 && n <= levels.length
+          )
+        : [];
+
+      state.xp = Math.max(0, Number(saved.xp) || 0);
+      state.inventory = Array.isArray(saved.inventory)
+        ? saved.inventory.filter(item => typeof item === "string")
+        : [];
+
+      state.discovered = Array.isArray(saved.discovered)
+        ? saved.discovered.filter(item => typeof item === "string")
+        : [];
+
+      state.deskClue = Boolean(saved.deskClue);
+      state.terminalComplete = Boolean(saved.terminalComplete);
+      state.gameWon = Boolean(saved.gameWon);
+
+    } catch (error) {
+      console.warn("Saved progress could not be loaded.", error);
+    }
+  }
+
+  function addLog(message) {
+    const list = $("logList");
+    if (!list) return;
+
+    const item = document.createElement("li");
+    item.textContent = message;
+    list.prepend(item);
+
+    while (list.children.length > 8) {
+      list.removeChild(list.lastElementChild);
+    }
+  }
+
+  function toast(title, message) {
+    const box = $("toast");
+    if (!box) return;
+
+    if ($("toastTitle")) $("toastTitle").textContent = title;
+    if ($("toastMessage")) $("toastMessage").textContent = message;
+
+    box.classList.add("show");
+    clearTimeout(toast.timer);
+
+    toast.timer = setTimeout(() => {
+      box.classList.remove("show");
+    }, 3200);
+  }
+
+  function awardXP(amount, reason) {
+    state.xp += amount;
+    addLog("+" + amount + " XP — " + reason);
+    toast("XP EARNED", "+" + amount + " XP · " + reason);
+    updateUI();
+    saveGame();
+  }
+
+  function addInventory(item) {
+    if (state.inventory.includes(item)) return false;
+
+    state.inventory.push(item);
+    addLog("Item collected: " + item);
+    updateUI();
+    saveGame();
+    return true;
+  }
+
+  function updateUI() {
+    const level = levels[state.level - 1];
+
+    if ($("year")) $("year").textContent = new Date().getFullYear();
+    if ($("chapterNumber")) {
+      $("chapterNumber").textContent =
+        String(state.level).padStart(2, "0");
+    }
+
+    if ($("pageTitle")) $("pageTitle").textContent = level.name;
+    if ($("pageSubtitle")) {
+      $("pageSubtitle").textContent =
+        "Explore your surroundings. Find clues. Plan your escape.";
+    }
+
+    if ($("roomNumber")) {
+      $("roomNumber").textContent =
+        "CELL " + String(state.level).padStart(2, "0");
+    }
+
+    if ($("sceneLevel")) {
+      $("sceneLevel").textContent =
+        "LEVEL " + state.level + " / " + levels.length;
+    }
+
+    if ($("xpValue")) $("xpValue").textContent = state.xp;
+
+    if ($("rankText")) {
+      $("rankText").textContent =
+        state.xp >= 250 ? "MASTER ESCAPIST" :
+        state.xp >= 100 ? "STRATEGIST" : "ROOKIE";
+    }
+
+    if ($("xpFill")) {
+      $("xpFill").style.width = Math.min(100, state.xp % 250 / 2.5) + "%";
+    }
+
+    if ($("xpNote")) {
+      $("xpNote").textContent =
+        Math.max(0, 250 - state.xp % 250) + " XP TO NEXT MILESTONE";
+    }
+
+    if ($("inventoryCount")) {
+      $("inventoryCount").textContent = state.inventory.length;
+    }
+
+    if ($("inventoryList")) {
+      const list = $("inventoryList");
+      list.replaceChildren();
+
+      if (!state.inventory.length) {
+        const empty = document.createElement("li");
+        empty.textContent = "No items collected yet.";
+        list.appendChild(empty);
+      } else {
+        state.inventory.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          list.appendChild(li);
+        });
+      }
+    }
+
+    const tasks = [
+      ["taskInspect", state.discovered.length > 0],
+      ["taskCode", state.deskClue],
+      ["taskDesk", state.terminalComplete],
+      ["taskDoor", state.completedLevels.includes(state.level)]
+    ];
+
+    let completedTasks = 0;
+
+    tasks.forEach(([id, complete]) => {
+      const el = $(id);
+      if (!el) return;
+
+      el.classList.toggle("complete", complete);
+      if (complete) completedTasks++;
+    });
+
+    if ($("missionCount")) {
+      $("missionCount").textContent = completedTasks + "/" + tasks.length;
+    }
+
+    if ($("levelStatus")) {
+      $("levelStatus").textContent =
+        state.completedLevels.includes(state.level)
+          ? "COMPLETED"
+          : "IN PROGRESS";
+    }
+
+    if ($("roomWarning")) {
+      $("roomWarning").textContent = state.gameWon
+        ? "ESCAPE SUCCESSFUL"
+        : "INVESTIGATE YOUR SURROUNDINGS";
+    }
+
+    if ($("sceneStatus")) {
+      $("sceneStatus").textContent = state.paused
+        ? "PAUSED"
+        : state.platformMode ? "PLATFORM MODE" : "EXPLORATION MODE";
+    }
+
+    renderLevels();
+    updatePlayerPosition();
+  }
+
+  function renderLevels() {
+    const grid = $("levelGrid");
+    if (!grid) return;
+
+    grid.replaceChildren();
+
+    levels.forEach((level, index) => {
+      const number = index + 1;
+      const unlocked = number <= state.highestUnlocked;
+      const completed = state.completedLevels.includes(number);
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "level-card";
+      button.disabled = !unlocked;
+
+      const title = document.createElement("strong");
+      title.textContent = number + ". " + level.name;
+
+      const status = document.createElement("span");
+      status.textContent = completed
+        ? "COMPLETED"
+        : unlocked ? "AVAILABLE" : "LOCKED";
+
+      button.append(title, status);
+
+      button.addEventListener("click", () => {
+        if (!unlocked) return;
+
+        state.level = number;
+        state.playerX = 45;
+        state.playerY = 0;
+        state.velocityY = 0;
+        state.grounded = true;
+        state.targetObject = null;
+        state.platformMode = false;
+        state.gameWon = completed;
+        updateUI();
+        saveGame();
+
+        toast("LEVEL LOADED", level.name);
+        addLog("Entered " + level.name + ".");
+      });
+
+      grid.appendChild(button);
+    });
+  }
+
+  function updatePlayerPosition() {
+    const player = $("stickman");
+    if (!player) return;
+
+    player.style.left = state.playerX + "%";
+
+    if (state.platformMode) {
+      player.style.bottom = "27%";
+      player.style.transform =
+        "translateX(-50%) translateY(" + (-state.playerY) + "px)";
+    } else {
+      player.style.bottom = "27%";
+      player.style.transform = "translateX(-50%)";
+    }
+  }
+
+  function setPrompt(message) {
+    if ($("interactionPrompt")) {
+      $("interactionPrompt").textContent = message;
+    }
+  }
+
+  function nearestObject() {
+    if (!state.targetObject) return null;
+
+    const distance = Math.abs(
+      state.playerX - objectPositions[state.targetObject]
+    );
+
+    return distance <= 10 ? state.targetObject : null;
+  }
+
+  function updateInteractionPrompt() {
+    if (state.platformMode) {
+      setPrompt("PLATFORM MODE · MOVE AND JUMP");
+      return;
+    }
+
+    if (!state.targetObject) {
+      setPrompt("Tap an object to investigate");
+      return;
+    }
+
+    const nearby = nearestObject();
+
+    if (nearby) {
+      setPrompt("INTERACT · " + objectNames[nearby].toUpperCase());
+    } else {
+      setPrompt("MOVING TO " +
+        objectNames[state.targetObject].toUpperCase() + "…");
+    }
+  }
+
+  function showModal(title, description, buttons) {
+    const backdrop = $("modalBackdrop");
+    if (!backdrop) {
+      toast(title, description);
+      return;
+    }
+
+    modalOpen = true;
+
+    if ($("modalTitle")) $("modalTitle").textContent = title;
+    if ($("modalDescription")) {
+      $("modalDescription").textContent = description;
+    }
+
+    const content = $("modalContent");
+    if (content) content.replaceChildren();
+
+    const feedback = $("modalFeedback");
+    if (feedback) feedback.textContent = "";
+
+    const actions = $("modalActions");
+    if (actions) {
+      actions.replaceChildren();
+
+      (buttons || [{ label: "CLOSE", action: closeModal }])
+        .forEach(buttonInfo => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = buttonInfo.label;
+          button.addEventListener("click", buttonInfo.action);
+          actions.appendChild(button);
+        });
+    }
+
+    backdrop.classList.add("open");
+    backdrop.setAttribute("aria-hidden", "false");
+  }
+
+  function closeModal() {
+    modalOpen = false;
+
+    const backdrop = $("modalBackdrop");
+    if (!backdrop) return;
+
+    backdrop.classList.remove("open");
+    backdrop.setAttribute("aria-hidden", "true");
+  }
+
+  function investigate(object) {
+    if (state.paused || state.platformMode) return;
+
+    const nearby = nearestObject();
+
+    if (nearby !== object) {
+      state.targetObject = object;
+      state.walkingDirection =
+        Math.sign(objectPositions[object] - state.playerX);
+
+      updateInteractionPrompt();
+      toast("MOVING", "Approaching " + objectNames[object] + ".");
+      return;
+    }
+
+    state.targetObject = object;
+    openObject(object);
+  }
+
+  function openObject(object) {
+    switch (object) {
+      case "window":
+        if (!state.discovered.includes("window")) {
+          state.discovered.push("window");
+          addInventory("Bent Wire");
+          awardXP(10, "Window inspected");
+        }
+
+        showModal(
+          "THE WINDOW",
+          "One metal bar is loose. You might be able to use a small tool later, but the window is too high to escape through.",
+          [{ label: "BACK TO CELL", action: closeModal }]
+        );
+        break;
+
+      case "bed":
+        if (!state.discovered.includes("bed")) {
+          state.discovered.push("bed");
+          awardXP(10, "Bed searched");
+        }
+
+        showModal(
+          "UNDER THE BED",
+          "You discover a torn note: “The desk holds the access code. The terminal may reveal another clue.”",
+          [{ label: "KEEP SEARCHING", action: closeModal }]
+        );
+        break;
+
+      case "desk":
+        if (!state.discovered.includes("desk")) {
+          state.discovered.push("desk");
+          state.deskClue = true;
+          addInventory("Access Code Note");
+          awardXP(20, "Desk clue discovered");
+        }
+
+        showModal(
+          "THE DESK",
+          "A folded note contains the access code: " +
+            levels[state.level - 1].code +
+            ". Remember it for the exit door.",
+          [{ label: "TAKE NOTE", action: closeModal }]
+        );
+        break;
+
+      case "computer":
+        showModal(
+          "THE TERMINAL",
+          "A training terminal is available. Open the terminal panel and complete its simple Python-style challenge.",
+          [
+            {
+              label: "GO TO TERMINAL",
+              action: () => {
+                closeModal();
+                if ($("terminalInput")) $("terminalInput").focus();
+
+                if ($("terminalOutput")) {
+                  $("terminalOutput").textContent +=
+                    "\nTerminal ready. Type help for available commands.\n";
+                }
+
+                const terminal = $("terminalForm");
+                if (terminal) {
+                  terminal.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                  });
+                }
+              }
+            },
+            { label: "CLOSE", action: closeModal }
+          ]
+        );
+        break;
+
+      case "door":
+        if (!state.deskClue) {
+          showModal(
+            "LOCKED EXIT",
+            "The door requires a code. Search the desk before trying to escape.",
+            [{ label: "UNDERSTOOD", action: closeModal }]
+          );
+          return;
+        }
+
+        showModal(
+          "EXIT SECURITY",
+          "Enter the four-digit code you found on the desk.",
+          [
+            {
+              label: "ENTER CODE",
+              action: () => {
+                closeModal();
+                askForCode();
+              }
+            },
+            { label: "CANCEL", action: closeModal }
+          ]
+        );
+        break;
+    }
+
+    updateUI();
+    saveGame();
+  }
+
+  function askForCode() {
+    const wrapper = $("modalContent");
+    const actions = $("modalActions");
+
+    showModal(
+      "ACCESS CODE",
+      "Use the code from the desk note.",
+      []
+    );
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.inputMode = "numeric";
+    input.maxLength = 4;
+    input.placeholder = "4-digit code";
+    input.autocomplete = "off";
+    input.setAttribute("aria-label", "Four-digit access code");
+
+    if (wrapper) wrapper.appendChild(input);
+
+    const message = document.createElement("p");
+    message.textContent = "";
+    if (wrapper) wrapper.appendChild(message);
+
+    if (actions) {
+      const submit = document.createElement("button");
+      submit.type = "button";
+      submit.textContent = "UNLOCK";
+
+      submit.addEventListener("click", () => {
+        if (input.value.trim() !== levels[state.level - 1].code) {
+          message.textContent = "That code is incorrect. Check your note.";
+          return;
+        }
+
+        if (!state.terminalComplete) {
+          message.textContent =
+            "Code accepted, but the terminal challenge must also be completed.";
+          return;
+        }
+
+        closeModal();
+        completeLevel();
+      });
+
+      const cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.textContent = "CANCEL";
+      cancel.addEventListener("click", closeModal);
+
+      actions.append(submit, cancel);
+    }
+
+    input.focus();
+  }
+
+  function completeLevel() {
+    const current = state.level;
+
+    if (!state.completedLevels.includes(current)) {
+      state.completedLevels.push(current);
+      awardXP(50, "Escape route completed");
+    }
+
+    state.gameWon = true;
+
+    if (current < levels.length) {
+      state.highestUnlocked = Math.max(
+        state.highestUnlocked,
+        current + 1
+      );
+    }
+
+    updateUI();
+    saveGame();
+    addLog("Completed " + levels[current - 1].name + ".");
+
+    const buttons = [];
+
+    if (current < levels.length) {
+      buttons.push({
+        label: "NEXT LEVEL",
+        action: () => {
+          closeModal();
+          state.level = current + 1;
+          state.playerX = 45;
+          state.playerY = 0;
+          state.velocityY = 0;
+          state.grounded = true;
+          state.targetObject = null;
+          state.platformMode = false;
+          state.gameWon = false;
+          updateUI();
+          saveGame();
+          toast("NEW CHAPTER", levels[state.level - 1].name);
+        }
+      });
+    } else {
+      buttons.push({
+        label: "PLAY AGAIN",
+        action: () => {
+          closeModal();
+          state.level = 1;
+          state.playerX = 45;
+          state.playerY = 0;
+          state.velocityY = 0;
+          state.grounded = true;
+          state.targetObject = null;
+          state.platformMode = false;
+          state.gameWon = false;
+          updateUI();
+          saveGame();
+        }
+      });
+    }
+
+    buttons.push({ label: "CLOSE", action: closeModal });
+
+    showModal(
+      "ESCAPE SUCCESSFUL!",
+      current < levels.length
+        ? "You solved the challenge and escaped this area. The next chapter is now unlocked."
+        : "You completed all five chapters. You are officially a master escapist!",
+      buttons
+    );
+  }
+
+  function terminalPrint(text) {
+    const output = $("terminalOutput");
+    if (!output) return;
+
+    output.textContent += text + "\n";
+    output.scrollTop = output.scrollHeight;
+  }
+
+  function runTerminalCommand(command) {
+    const raw = command.trim();
+    if (!raw) return;
+
+    terminalPrint("> " + raw);
+
+    const normalized = raw
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+
+    if (normalized === "help") {
+      terminalPrint(
+        "Available commands: help, look, inventory, status, hint, clear"
+      );
+      terminalPrint(
+        'Challenge: print("I will escape!")'
+      );
+      return;
+    }
+
+    if (normalized === "look") {
+      terminalPrint(
+        "You see a window, bed, desk, computer terminal, and locked door."
+      );
+      return;
+    }
+
+    if (normalized === "inventory") {
+      terminalPrint(
+        state.inventory.length
+          ? "Inventory: " + state.inventory.join(", ")
+          : "Your inventory is empty."
+      );
+      return;
+    }
+
+    if (normalized === "status") {
+      terminalPrint(
+        "Level: " + state.level +
+        " | XP: " + state.xp +
+        " | Desk clue: " + (state.deskClue ? "found" : "missing") +
+        " | Challenge: " + (state.terminalComplete ? "complete" : "incomplete")
+      );
+      return;
+    }
+
+    if (normalized === "hint") {
+      terminalPrint(
+        "Hint: inspect the desk for the code, then complete the print challenge."
+      );
+      return;
+    }
+
+    if (normalized === "clear") {
+      const output = $("terminalOutput");
+      if (output) {
+        output.textContent = "VERIDIS PRISON TERMINAL\nType help for commands.\n";
+      }
+      return;
+    }
+
+    const isChallenge =
+      /^print\s*\(\s*(['"])i will escape!\1\s*\)\s*;?$/.test(raw);
+
+    if (isChallenge) {
+      terminalPrint("I will escape!");
+
+      if (!state.terminalComplete) {
+        state.terminalComplete = true;
+        awardXP(50, "Terminal challenge completed");
+        terminalPrint("CHALLENGE COMPLETE. Return to the exit door.");
+      } else {
+        terminalPrint("Challenge already completed.");
+      }
+
+      updateUI();
+      saveGame();
+      return;
+    }
+
+    terminalPrint(
+      "Command not recognised. Type help to see the available commands."
+    );
+  }
+
+  function bindEvents() {
+    document.querySelectorAll("[data-object]").forEach(button => {
+      button.addEventListener("click", () => {
+        const object = button.dataset.object;
+        if (!objectPositions.hasOwnProperty(object)) return;
+
+        state.targetObject = object;
+
+        if (state.platformMode) {
+          toast("PLATFORM MODE", "Switch back to exploration to inspect objects.");
+          return;
+        }
+
+        investigate(object);
+      });
+    });
+
+    const interactButton = $("interactButton");
+    if (interactButton) {
+      interactButton.addEventListener("click", () => {
+        if (!state.targetObject) {
+          toast("NO TARGET", "Tap an object in the room first.");
+          return;
+        }
+
+        const nearby = nearestObject();
+
+        if (nearby) {
+          openObject(nearby);
+        } else {
+          state.walkingDirection = Math.sign(
+            objectPositions[state.targetObject] - state.playerX
+          );
+          toast("TOO FAR AWAY", "Moving closer to the selected object.");
+        }
+      });
+    }
+
+    const left = $("moveLeft");
+    const right = $("moveRight");
+
+    function hold(button, direction) {
+      if (!button) return;
+
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        keys[direction] = true;
+      });
+
+      ["pointerup", "pointercancel", "pointerleave"].forEach(type => {
+        button.addEventListener(type, () => {
+          keys[direction] = false;
+        });
+      });
+    }
+
+    hold(left, "left");
+    hold(right, "right");
+
+    const jump = $("jumpButton");
+    if (jump) {
+      jump.addEventListener("click", jumpPlayer);
+    }
+
+    const mode = $("modeButton");
+    if (mode) {
+      mode.addEventListener("click", () => {
+        state.platformMode = !state.platformMode;
+        state.targetObject = null;
+        state.walkingDirection = 0;
+        state.playerY = 0;
+        state.velocityY = 0;
+        state.grounded = true;
+
+        if ($("modeButton")) {
+          $("modeButton").textContent = state.platformMode
+            ? "EXPLORATION MODE"
+            : "PLATFORM CHALLENGE";
+        }
+
+        updateInteractionPrompt();
+        updateUI();
+
+        toast(
+          state.platformMode ? "PLATFORM CHALLENGE" : "EXPLORATION MODE",
+          state.platformMode
+            ? "Move with the left/right controls and jump toward the exit."
+            : "Tap objects to investigate the room."
+        );
+      });
+    }
+
+    const pause = $("pauseButton");
+    if (pause) {
+      pause.addEventListener("click", togglePause);
+    }
+
+    const resume = $("resumeButton");
+    if (resume) {
+      resume.addEventListener("click", togglePause);
+    }
+
+    const close = $("closeModal");
+    if (close) close.addEventListener("click", closeModal);
+
+    const backdrop = $("modalBackdrop");
+    if (backdrop) {
+      backdrop.addEventListener("click", event => {
+        if (event.target === backdrop) closeModal();
+      });
+    }
+
+    const terminalForm = $("terminalForm");
+    if (terminalForm) {
+      terminalForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        const input = $("terminalInput");
+        if (!input) return;
+
+        runTerminalCommand(input.value);
+        input.value = "";
+      });
+    }
+
+    document.querySelectorAll("[data-command]").forEach(button => {
+      button.addEventListener("click", () => {
+        const command = button.dataset.command || "";
+        if (command) runTerminalCommand(command);
+      });
+    });
+
+    const reset = $("resetButton");
+    if (reset) {
+      reset.addEventListener("click", () => {
+        if (!window.confirm("Reset all saved Escape the Prison progress?")) {
+          return;
+        }
+
+        localStorage.removeItem(SAVE_KEY);
+        window.location.reload();
+      });
+    }
+
+    document.addEventListener("keydown", event => {
+      const active = document.activeElement;
+      const typing = active &&
+        (active.tagName === "INPUT" ||
+         active.tagName === "TEXTAREA" ||
+         active.isContentEditable);
+
+      if (typing) return;
+
+      if (event.key === "Escape" && modalOpen) {
+        closeModal();
+        return;
+      }
+
+      if (event.key.toLowerCase() === "p") {
+        togglePause();
+        return;
+      }
+
+      if (modalOpen || state.paused) return;
+
+      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+        keys.left = true;
+        event.preventDefault();
+      }
+
+      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+        keys.right = true;
+        event.preventDefault();
+      }
+
+      if (event.code === "Space") {
+        jumpPlayer();
+        event.preventDefault();
+      }
+
+      if (event.key.toLowerCase() === "e") {
+        if (state.targetObject && nearestObject()) {
+          openObject(state.targetObject);
+        } else {
+          toast("SELECT AN OBJECT", "Tap an object before interacting.");
+        }
+      }
+    });
+
+    document.addEventListener("keyup", event => {
+      if (
+        event.key === "ArrowLeft" ||
+        event.key.toLowerCase() === "a"
+      ) keys.left = false;
+
+      if (
+        event.key === "ArrowRight" ||
+        event.key.toLowerCase() === "d"
+      ) keys.right = false;
+    });
+
+    window.addEventListener("blur", () => {
+      keys.left = false;
+      keys.right = false;
+    });
+  }
+
+  function jumpPlayer() {
+    if (state.paused || !state.platformMode || !state.grounded) return;
+
+    state.velocityY = 520;
+    state.grounded = false;
+  }
+
+  function togglePause() {
+    state.paused = !state.paused;
+
+    const overlay = $("pauseOverlay");
+    if (overlay) {
+      overlay.classList.toggle("show", state.paused);
+    }
+
+    if ($("pauseButton")) {
+      $("pauseButton").textContent = state.paused ? "RESUME" : "PAUSE";
+    }
+
+    if ($("sceneStatus")) {
+      $("sceneStatus").textContent = state.paused
+        ? "PAUSED"
+        : state.platformMode ? "PLATFORM MODE" : "EXPLORATION MODE";
+    }
+
+    if (state.paused) {
+      keys.left = false;
+      keys.right = false;
+    }
+  }
+
+  function gameLoop(timestamp) {
+    const dt = Math.min((timestamp - (lastFrame || timestamp)) / 1000, 0.035);
+    lastFrame = timestamp;
+
+    if (!state.paused && !modalOpen) {
+      let direction = 0;
+
+      if (keys.left) direction -= 1;
+      if (keys.right) direction += 1;
+
+      if (!state.platformMode && state.targetObject) {
+        if (!nearestObject()) {
+          direction = Math.sign(
+            objectPositions[state.targetObject] - state.playerX
+          );
+        } else {
+          direction = 0;
+        }
+      }
+
+      state.playerX += direction * 35 * dt;
+      state.playerX = Math.max(4, Math.min(96, state.playerX));
+
+      if (state.platformMode) {
+        if (!state.grounded) {
+          const oldY = state.playerY;
+          state.velocityY -= 1100 * dt;
+          state.playerY += state.velocityY * dt;
+
+          if (state.playerY <= 0) {
+            state.playerY = 0;
+            state.velocityY = 0;
+            state.grounded = true;
+          }
+
+          const room = $("gameRoom");
+
+          if (room && state.velocityY < 0 && oldY > 0) {
+            const playerHeight = room.clientHeight;
+            const platformElements = [
+              $("platform1"),
+              $("platform2"),
+              $("platformExit")
+            ].filter(Boolean);
+
+            platformElements.forEach(platform => {
+              const roomRect = room.getBoundingClientRect();
+              const rect = platform.getBoundingClientRect();
+              const platformHeight =
+                roomRect.bottom - rect.bottom - roomRect.height * 0.27;
+
+              const playerAtPlatform =
+                Math.abs(state.playerX - (
+                  ((rect.left + rect.right) / 2 - roomRect.left) /
+                  roomRect.width * 100
+                )) < 9;
+
+              if (
+                playerAtPlatform &&
+                oldY >= platformHeight &&
+                state.playerY <= platformHeight &&
+                platformHeight > 0
+              ) {
+                state.playerY = platformHeight;
+                state.velocityY = 0;
+                state.grounded = true;
+              }
+            });
+
+            if (state.playerY > playerHeight) {
+              state.playerY = playerHeight;
+            }
+          }
+        }
+
+        if (state.playerX >= 89) {
+          if (state.playerY >= 35) {
+            toast("EXIT REACHED", "Return to exploration to unlock the door.");
+            state.playerX = 84;
+          } else {
+            toast("JUMP HIGHER", "Use the platforms to reach the exit.");
+            state.playerX = 84;
+          }
+        }
+      }
+
+      updatePlayerPosition();
+      updateInteractionPrompt();
+    }
+
+    animationFrame = requestAnimationFrame(gameLoop);
+  }
+
+  function initialise() {
+    loadGame();
+    bindEvents();
+
+    if ($("terminalOutput")) {
+      $("terminalOutput").textContent =
+        "VERIDIS PRISON TERMINAL\n" +
+        "Training environment active.\n" +
+        'Try: print("I will escape!")\n' +
+        "Type help for more commands.\n";
+    }
+
+    if ($("modeButton")) {
+      $("modeButton").textContent = "PLATFORM CHALLENGE";
+    }
+
+    addLog("Mission system initialized.");
+    updateUI();
+    updateInteractionPrompt();
+
+    if (animationFrame !== null) {
+      cancelAnimationFrame(animationFrame);
+    }
+
+    animationFrame = requestAnimationFrame(gameLoop);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialise);
+  } else {
+    initialise();
+  }
+})();
+</script>
+
+</body>
+  </html>
