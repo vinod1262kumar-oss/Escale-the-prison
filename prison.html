@@ -608,6 +608,41 @@ h1{font-size:clamp(26px,4vw,39px);letter-spacing:-1.5px;margin-top:10px}
         <button class="door-object room-object" data-object="door" aria-label="Investigate locked cell door" type="button">
           <span class="object-tip">LOCKED EXIT</span>
         </button>
+        <!-- 2D STICKMAN -->
+<div class="stickman" id="stickman"
+     role="img" aria-label="Your stickman character">
+
+  <svg viewBox="0 0 46 82" aria-hidden="true">
+    <!-- Head -->
+    <circle class="head" cx="23" cy="13" r="9"/>
+
+    <!-- Body -->
+    <path class="body-part" d="M23 23 L23 49"/>
+
+    <!-- Arms -->
+    <path class="body-part arm-left"
+          d="M23 30 L10 42"/>
+
+    <path class="body-part arm-right"
+          d="M23 30 L36 42"/>
+
+    <!-- Legs -->
+    <path class="body-part leg-left"
+          d="M23 49 L12 70"/>
+
+    <path class="body-part leg-right"
+          d="M23 49 L34 70"/>
+  </svg>
+</div>
+
+<!-- PLATFORMS FOR THE CHALLENGE MODE -->
+<div class="platform platform-one"></div>
+<div class="platform platform-two"></div>
+<div class="platform platform-three"></div>
+
+<div class="platform-exit" id="platformExit">
+  EXIT → REACH ME
+</div>
 
         <div class="room-hint">TIP: TAP OBJECTS TO INVESTIGATE</div>
       </div>
@@ -616,6 +651,38 @@ h1{font-size:clamp(26px,4vw,39px);letter-spacing:-1.5px;margin-top:10px}
         <span>ENVIRONMENT</span>
         <strong id="sceneStatus">4 OBJECTS UNDISCOVERED</strong>
         <span>◈ LEVEL 01</span>
+        <!-- STICKMAN CONTROLS -->
+<div class="game-controls">
+
+  <div class="control-group">
+    <button class="game-control"
+            type="button"
+            id="moveLeft"
+            aria-label="Move left">◀ LEFT</button>
+
+    <button class="game-control"
+            type="button"
+            id="moveRight"
+            aria-label="Move right">RIGHT ▶</button>
+
+    <button class="game-control"
+            type="button"
+            id="jumpButton">⬆ JUMP</button>
+  </div>
+
+  <div class="control-group">
+    <button class="game-control"
+            type="button"
+            id="modeButton">
+      ENTER PLATFORM MODE
+    </button>
+  </div>
+
+  <p class="control-hint" id="controlHint">
+    Use the buttons or your keyboard: A/D or ←/→ to move, Space to jump.
+  </p>
+
+</div>
       </div>
     </section>
 
@@ -1174,7 +1241,8 @@ function completeEscape() {
 
   $("#sceneStatus").textContent = "ESCAPE COMPLETE";
   $("#levelStatus").textContent = "COMPLETED";
-  $("#door").disabled = true;
+  const doorButton = document.querySelector('[data-object="door"]');
+if (doorButton) doorButton.disabled = true;
 }
 
 function terminalPrint(text, className = "") {
@@ -1304,6 +1372,284 @@ $("#resetButton").addEventListener("click", () => {
 });
 
 $("#year").textContent = new Date().getFullYear();
+  /* ==========================================
+   2D STICKMAN MOVEMENT + PLATFORM CHALLENGE
+========================================== */
+
+const stickman = $("#stickman");
+const gameRoom = document.querySelector(".room");
+const modeButton = $("#modeButton");
+const controlHint = $("#controlHint");
+const platformExit = $("#platformExit");
+
+let gameMode = "explore";
+let playerX = 48;
+let playerY = 0;
+let velocityY = 0;
+let grounded = true;
+
+const keys = {
+  left: false,
+  right: false
+};
+
+const PLAYER_SPEED = 3.2;
+const GRAVITY = 0.65;
+const JUMP_POWER = 10.5;
+
+function updateStickman() {
+  stickman.style.left = playerX + "%";
+
+  if (gameMode === "explore") {
+    stickman.style.bottom = "27%";
+    stickman.style.transform = "translateX(-50%)";
+  } else {
+    stickman.style.bottom = `calc(0px + ${playerY}px)`;
+    stickman.style.transform = "translateX(-50%)";
+  }
+}
+
+function setWalking(active) {
+  stickman.classList.toggle("walking", active);
+}
+
+function jump() {
+  if (gameMode === "explore") {
+    showToast(
+      "EXPLORATION MODE",
+      "Switch to Platform Mode to jump between platforms."
+    );
+    return;
+  }
+
+  if (grounded) {
+    velocityY = JUMP_POWER;
+    grounded = false;
+  }
+}
+
+function movePlayer(direction) {
+  if (direction === "left") {
+    playerX -= PLAYER_SPEED;
+  }
+
+  if (direction === "right") {
+    playerX += PLAYER_SPEED;
+  }
+
+  playerX = Math.max(5, Math.min(95, playerX));
+
+  updateStickman();
+}
+
+function setMode(mode) {
+  gameMode = mode;
+  keys.left = false;
+  keys.right = false;
+  setWalking(false);
+
+  if (mode === "platform") {
+    gameRoom.classList.add("platform-mode");
+    modeButton.textContent = "RETURN TO EXPLORATION";
+    controlHint.textContent =
+      "Reach the platforms and jump toward the EXIT marker.";
+
+    playerX = 8;
+    playerY = 0;
+    velocityY = 0;
+    grounded = true;
+
+    showToast(
+      "PLATFORM CHALLENGE",
+      "Move right and jump onto the platforms."
+    );
+  } else {
+    gameRoom.classList.remove("platform-mode");
+    modeButton.textContent = "ENTER PLATFORM MODE";
+    controlHint.textContent =
+      "Use LEFT/RIGHT or A/D. Press SPACE to jump in Platform Mode.";
+
+    playerX = 48;
+    playerY = 0;
+    velocityY = 0;
+    grounded = true;
+  }
+
+  updateStickman();
+}
+
+function platformPhysics() {
+  if (gameMode !== "platform") return;
+
+  const roomHeight = gameRoom.clientHeight;
+  const floorHeight = roomHeight * 0.29;
+  const playerHeight = stickman.offsetHeight;
+
+  const previousY = playerY;
+
+  velocityY -= GRAVITY;
+  playerY += velocityY;
+
+  if (playerY <= 0) {
+    playerY = 0;
+    velocityY = 0;
+    grounded = true;
+  }
+
+  // Land on platforms when falling through their top surface.
+  const platforms = document.querySelectorAll(".platform");
+
+  platforms.forEach((platform) => {
+    const platformRect = platform.getBoundingClientRect();
+    const roomRect = gameRoom.getBoundingClientRect();
+
+    const platformLeft =
+      ((platformRect.left - roomRect.left) / roomRect.width) * 100;
+
+    const platformRight =
+      ((platformRect.right - roomRect.left) / roomRect.width) * 100;
+
+    const platformHeight =
+      roomRect.bottom - platformRect.bottom - floorHeight;
+
+    const playerLeft = playerX - 2;
+    const playerRight = playerX + 2;
+
+    const wasAbove = previousY >= platformHeight;
+    const isFalling = velocityY <= 0;
+    const overlaps =
+      playerRight > platformLeft &&
+      playerLeft < platformRight;
+
+    if (
+      isFalling &&
+      wasAbove &&
+      playerY <= platformHeight &&
+      overlaps
+    ) {
+      playerY = platformHeight;
+      velocityY = 0;
+      grounded = true;
+    }
+  });
+
+  // Keep the player inside the visible room.
+  const maximumHeight = roomHeight - floorHeight - playerHeight;
+
+  if (playerY > maximumHeight) {
+    playerY = maximumHeight;
+    velocityY = 0;
+  }
+
+  // Check whether the player reaches the exit marker.
+  const exitLeft = 86;
+
+  if (playerX >= exitLeft && playerY > roomHeight * 0.2) {
+    showToast(
+      "PLATFORM CHECKPOINT",
+      "You reached the exit marker! More escape levels can be added next."
+    );
+
+    playerX = 82;
+    playerY = 0;
+    velocityY = 0;
+    grounded = true;
+  }
+
+  updateStickman();
+}
+
+let lastFrameTime = 0;
+
+function gameLoop(timestamp) {
+  if (!lastFrameTime) lastFrameTime = timestamp;
+
+  const delta = Math.min((timestamp - lastFrameTime) / 16.67, 2);
+  lastFrameTime = timestamp;
+
+  if (keys.left) movePlayer("left");
+  if (keys.right) movePlayer("right");
+
+  if (gameMode === "platform") {
+    platformPhysics();
+  }
+
+  setWalking(keys.left || keys.right);
+  requestAnimationFrame(gameLoop);
+}
+
+function bindHoldButton(buttonId, direction) {
+  const button = $("#" + buttonId);
+
+  const start = (event) => {
+    event.preventDefault();
+    keys[direction] = true;
+  };
+
+  const stop = () => {
+    keys[direction] = false;
+  };
+
+  button.addEventListener("pointerdown", start);
+  button.addEventListener("pointerup", stop);
+  button.addEventListener("pointerleave", stop);
+  button.addEventListener("pointercancel", stop);
+  button.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+  });
+}
+
+bindHoldButton("moveLeft", "left");
+bindHoldButton("moveRight", "right");
+
+$("#jumpButton").addEventListener("click", jump);
+
+modeButton.addEventListener("click", () => {
+  setMode(gameMode === "explore" ? "platform" : "explore");
+});
+
+document.addEventListener("keydown", (event) => {
+  if (
+    event.target instanceof HTMLInputElement ||
+    event.target instanceof HTMLTextAreaElement
+  ) {
+    return;
+  }
+
+  if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+    keys.left = true;
+    event.preventDefault();
+  }
+
+  if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+    keys.right = true;
+    event.preventDefault();
+  }
+
+  if (event.code === "Space" && gameMode === "platform") {
+    event.preventDefault();
+    jump();
+  }
+});
+
+document.addEventListener("keyup", (event) => {
+  if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+    keys.left = false;
+  }
+
+  if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+    keys.right = false;
+  }
+});
+
+window.addEventListener("blur", () => {
+  keys.left = false;
+  keys.right = false;
+  setWalking(false);
+});
+
+updateStickman();
+requestAnimationFrame(gameLoop);
 
 /* Restore a saved session. */
 renderProgress();
@@ -1315,6 +1661,198 @@ if (state.codeComplete) {
 if (state.escaped) {
   terminalPrint("CHAPTER 01 COMPLETED — Welcome back, escape artist.", "terminal-success");
 }
+  /* ===== 2D STICKMAN CHARACTER ===== */
+
+.stickman {
+  position: absolute;
+  z-index: 10;
+  left: 48%;
+  bottom: 27%;
+  width: 46px;
+  height: 82px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: left 0.08s linear;
+  filter: drop-shadow(0 0 7px #ff9b5440);
+}
+
+.stickman svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.stickman .body-part {
+  fill: none;
+  stroke: #fff1e7;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stickman .head {
+  fill: #ffb878;
+  stroke: #fff1e7;
+  stroke-width: 2;
+}
+
+.stickman.walking .leg-left {
+  animation: legLeft .22s infinite alternate;
+  transform-origin: 23px 57px;
+}
+
+.stickman.walking .leg-right {
+  animation: legRight .22s infinite alternate;
+  transform-origin: 23px 57px;
+}
+
+.stickman.walking .arm-left {
+  animation: armLeft .22s infinite alternate;
+  transform-origin: 23px 35px;
+}
+
+.stickman.walking .arm-right {
+  animation: armRight .22s infinite alternate;
+  transform-origin: 23px 35px;
+}
+
+@keyframes legLeft {
+  to { transform: rotate(25deg); }
+}
+
+@keyframes legRight {
+  to { transform: rotate(-25deg); }
+}
+
+@keyframes armLeft {
+  to { transform: rotate(-22deg); }
+}
+
+@keyframes armRight {
+  to { transform: rotate(22deg); }
+}
+
+/* ===== GAME CONTROLS ===== */
+
+.game-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+  background: #100b0e;
+}
+
+.control-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.game-control {
+  min-width: 48px;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--orange-light);
+  background: #291821;
+  font: 11px "Space Mono", monospace;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.game-control:active {
+  background: var(--maroon);
+  transform: scale(.96);
+}
+
+.game-control.active {
+  background: var(--orange);
+  color: #211016;
+}
+
+.control-hint {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* ===== PLATFORM CHALLENGE ===== */
+
+.room.platform-mode {
+  background: linear-gradient(#271b28 0%, #171116 100%);
+}
+
+.platform {
+  display: none;
+  position: absolute;
+  z-index: 4;
+  height: 13px;
+  border: 2px solid #98616b;
+  border-radius: 4px;
+  background: linear-gradient(#75404f, #38212d);
+  box-shadow: 0 5px 12px #0006;
+  pointer-events: none;
+}
+
+.platform-mode .platform {
+  display: block;
+}
+
+.platform-one {
+  left: 18%;
+  bottom: 24%;
+  width: 23%;
+}
+
+.platform-two {
+  left: 48%;
+  bottom: 39%;
+  width: 22%;
+}
+
+.platform-three {
+  right: 4%;
+  bottom: 55%;
+  width: 18%;
+}
+
+.platform-exit {
+  display: none;
+  position: absolute;
+  z-index: 5;
+  right: 5%;
+  bottom: 62%;
+  padding: 8px;
+  border: 1px solid var(--orange);
+  border-radius: 7px;
+  color: var(--orange-light);
+  background: #160e12;
+  font: 9px "Space Mono", monospace;
+}
+
+.platform-mode .platform-exit {
+  display: block;
+}
+
+.platform-mode .bed-object,
+.platform-mode .desk-object,
+.platform-mode .terminal-object,
+.platform-mode .window-object,
+.platform-mode .door-object {
+  opacity: .18;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stickman.walking * {
+    animation: none !important;
+  }
+  }
+  
 </script>
 </body>
   </html>
