@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171311">
+
+  <title>Escape the Prison | Your Freedom, Your Code</title>
+
+  <meta
+    name="description"
+    content="Escape the Prison is an immersive coding adventure where you solve puzzles, learn Python, and fight your way to freedom."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+    :root {
+      --bg: #171311;
+      --bg-soft: #211815;
+      --panel: rgba(43, 31, 27, 0.78);
+      --panel-light: rgba(63, 43, 35, 0.56);
+
+      --orange: #ff9b54;
+      --orange-light: #ffc18a;
+      --peach: #ffcfad;
+      --gold: #e9b36e;
+      --red: #d86a48;
+
+      --text: #fff1e7;
+      --muted: #b6a49a;
+      --border: rgba(255, 191, 143, 0.15);
+
+      --radius: 22px;
+      --shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(
+          ellipse at 80% 0%,
+          rgba(142, 69, 37, 0.22),
+          transparent 42%
+        ),
+        radial-gradient(
+          ellipse at 0% 55%,
+          rgba(119, 49, 33, 0.15),
+          transparent 40%
+        ),
+        var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      pointer-events: none;
+      background-image:
+        linear-gradient(
+          rgba(255, 255, 255, 0.012) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.012) 1px,
+          transparent 1px
+        );
+      background-size: 44px 44px;
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--orange);
+      outline-offset: 4px;
+    }
+
+    .container {
+      width: min(1160px, calc(100% - 40px));
+      margin-inline: auto;
+    }
+
+    /* NAVIGATION */
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      background: rgba(23, 19, 17, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .nav-inner {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 178, 112, 0.35);
+      border-radius: 14px;
+      background: linear-gradient(
+        145deg,
+        rgba(255, 155, 84, 0.22),
+        rgba(216, 106, 72, 0.08)
+      );
+      color: var(--orange-light);
+      font-size: 22px;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+    }
+
+    .brand-subtitle {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-family: "Space Mono", monospace;
+      font-size: 9px;
+      letter-spacing: 1.6px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .nav-link {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--orange-light);
+    }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #c9b7aa;
+      font-family: "Space Mono", monospace;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #a8cf8b;
+      box-shadow: 0 0 12px rgba(168, 207, 139, 0.7);
+    }
+
+    /* COMMON COMPONENTS */
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--orange-light);
+      font-family: "Space Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 20px;
+      height: 1px;
+      content: "";
+      background: var(--orange);
+    }
+
+    .glass-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(
+        145deg,
+        rgba(67, 47, 38, 0.65),
+        rgba(35, 26, 23, 0.72)
+      );
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .btn {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 21px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      transition:
+        transform 0.2s,
+        background 0.2s,
+        border-color 0.2s,
+        box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      color: #24160f;
+      background: linear-gradient(
+        135deg,
+        var(--orange-light),
+        var(--orange)
+      );
+      box-shadow: 0 8px 28px rgba(255, 139, 73, 0.15);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 35px rgba(255, 139, 73, 0.28);
+    }
+
+    .btn-secondary {
+      border-color: var(--border);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(255, 177, 113, 0.45);
+      background: rgba(255, 155, 84, 0.07);
+    }
+
+    .mono {
+      font-family: "Space Mono", monospace;
+    }
+
+    /* HERO */
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      align-items: center;
+      gap: 55px;
+      padding-top: 82px;
+      padding-bottom: 75px;
+    }
+
+    .hero::after {
+      position: absolute;
+      top: 70px;
+      right: 8%;
+      width: 300px;
+      height: 300px;
+      z-index: -1;
+      border-radius: 50%;
+      content: "";
+      background: rgba(215, 100, 53, 0.09);
+      filter: blur(75px);
+      pointer-events: none;
+    }
+
+    .hero h1 {
+      max-width: 650px;
+      margin-top: 23px;
+      font-size: clamp(43px, 6.2vw, 76px);
+      font-weight: 800;
+      line-height: 0.99;
+      letter-spacing: -3.7px;
+    }
+
+    .hero h1 span {
+      display: block;
+      margin-top: 10px;
+      color: var(--orange);
+    }
+
+    .hero-description {
+      max-width: 475px;
+      margin-top: 25px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.9;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 23px;
+      margin-top: 30px;
+      color: #bca99d;
+      font-family: "Space Mono", monospace;
+      font-size: 10px;
+    }
+
+    .hero-meta span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meta-symbol {
+      color: var(--orange);
+    }
+
+    /* PRISON ILLUSTRATION */
+
+    .scene-card {
+      position: relative;
+      min-height: 390px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 176, 112, 0.2);
+      border-radius: 25px;
+      background:
+        radial-gradient(
+          ellipse at 50% 15%,
+          rgba(226, 112, 60, 0.25),
+          transparent 55%
+        ),
+        linear-gradient(
+          160deg,
+          #38251f,
+          #211714 65%,
+          #181210
+        );
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    }
+
+    .scene-top {
+      position: absolute;
+      top: 19px;
+      right: 20px;
+      left: 20px;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .scene-label {
+      color: #e4c1a8;
+      font-family: "Space Mono", monospace;
+      font-size: 9px;
+      letter-spacing: 1.2px;
+    }
+
+    .scene-tag {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 172, 109, 0.2);
+      border-radius: 8px;
+      color: var(--orange-light);
+      background: rgba(255, 155, 84, 0.08);
+      font-family: "Space Mono", monospace;
+      font-size: 9px;
+    }
+
+    .window-glow {
+      position: absolute;
+      top: 78px;
+      left: 50%;
+      width: 180px;
+      height: 155px;
+      transform: translateX(-50%);
+      border: 8px solid #50382d;
+      border-radius: 5px;
+      background:
+        linear-gradient(
+          90deg,
+          transparent 47%,
+          rgba(67, 38, 27, 0.9) 48%,
+          rgba(67, 38, 27, 0.9) 52%,
+          transparent 53%
+        ),
+        linear-gradient(
+          0deg,
+          transparent 47%,
+          rgba(67, 38, 27, 0.9) 48%,
+          rgba(67, 38, 27, 0.9) 52%,
+          transparent 53%
+        ),
+        linear-gradient(
+          180deg,
+          #e7a16c,
+          #b95c42 60%,
+          #713b32
+        );
+      box-shadow: 0 0 45px rgba(238, 123, 66, 0.18);
+    }
+
+    .window-glow::before {
+      position: absolute;
+      inset: 0;
+      content: "";
+      background: linear-gradient(
+        180deg,
+        rgba(255, 221, 174, 0.2),
+        transparent 60%
+      );
+    }
+
+    .scene-floor {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 33%;
+      background: linear-gradient(
+        180deg,
+        rgba(31, 21, 18, 0.2),
+        #15100e
+      );
+    }
+
+    .cell-door {
+      position: absolute;
+      bottom: 42px;
+      left: 50%;
+      width: 112px;
+      height: 180px;
+      transform: translateX(-50%);
+      border: 5px solid #5e4436;
+      border-bottom: 0;
+      border-radius: 6px 6px 0 0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 17px,
+          rgba(12, 10, 9, 0.92) 18px,
+          rgba(12, 10, 9, 0.92) 23px
+        ),
+        linear-gradient(90deg, #35251f, #6a4735, #30201a);
+      box-shadow: 0 0 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .cell-door::before {
+      position: absolute;
+      top: 45%;
+      right: 14px;
+      width: 9px;
+      height: 9px;
+      border: 2px solid var(--orange);
+      border-radius: 50%;
+      content: "";
+      background: #a75a38;
+      box-shadow: 0 0 12px rgba(255, 155, 84, 0.3);
+    }
+
+    .scene-light {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 230px;
+      height: 80px;
+      transform: translateX(-50%);
+      background: rgba(217, 107, 57, 0.15);
+      filter: blur(30px);
+    }
+
+    .scene-caption {
+      position: absolute;
+      right: 18px;
+      bottom: 17px;
+      left: 18px;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: #d7bba8;
+      font-family: "Space Mono", monospace;
+      font-size: 9px;
+    }
+
+    .scene-caption strong {
+      color: var(--orange-light);
+      font-weight: 400;
+    }
+
+    /* SECTION HEADERS */
+
+    .section {
+      padding-top: 38px;
+      padding-bottom: 68px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 26px;
+    }
+
+    .section-heading h2 {
+      margin-top: 12px;
+      font-size: clamp(25px, 3.4vw, 35px);
+      letter-spacing: -1.2px;
+    }
+
+    .section-heading p {
+      max-width: 380px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    /* LOCATION CARDS */
+
+    .locations {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .location-card {
+      position: relative;
+      min-height: 245px;
+      padding: 25px;
+      overflow: hidden;
+      transition:
+        transform 0.25s,
+        border-color 0.25s;
+    }
+
+    .location-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 177, 113, 0.35);
+    }
+
+    .location-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .location-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 172, 109, 0.19);
+      border-radius: 14px;
+      color: var(--orange-light);
+      background: rgba(255, 155, 84, 0.09);
+      font-size: 22px;
+    }
+
+    .difficulty {
+      color: #c9a78d;
+      font-family: "Space Mono", monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+    }
+
+    .location-card h3 {
+      margin-top: 23px;
+      font-size: 21px;
+      letter-spacing: -0.5px;
+    }
+
+    .location-card p {
+      max-width: 420px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .location-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .location-status {
+      color: #c2a895;
+      font-family: "Space Mono", monospace;
+      font-size: 9px;
+    }
+
+    .text-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 0;
+      color: var(--orange-light);
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .text-button:hover {
+      color: #ffd5b5;
+    }
+
+    /* MISSION PANEL */
+
+    .mission {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 30px;
+      padding: 29px;
+      overflow: hidden;
+    }
+
+    .mission::after {
+      position: absolute;
+      top: -80px;
+      right: 90px;
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      content: "";
+      background: rgba(255, 139, 73, 0.08);
+      filter: blur(45px);
+      pointer-events: none;
+    }
+
+    .mission-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .mission h2 {
+      margin-top: 12px;
+      font-size: 25px;
+      letter-spacing: -0.8px;
+    }
+
+    .mission p {
+      max-width: 570px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .mission-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 18px;
+      color: #d1b3a0;
+      font-family: "Space Mono", monospace;
+      font-size: 9px;
+    }
+
+    .mission-action {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* PROGRESS */
+
+    .progress-panel {
+      margin-top: 20px;
+      padding: 24px;
+    }
+
+    .progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .progress-header h3 {
+      font-size: 15px;
+    }
+
+    .progress-number {
+      color: var(--orange-light);
+      font-family: "Space Mono", monospace;
+      font-size: 11px;
+    }
+
+    .progress-track {
+      height: 6px;
+      margin-top: 17px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        var(--red),
+        var(--orange-light)
+      );
+      transition: width 0.4s ease;
+    }
+
+    .progress-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    /* FOOTER */
+
+    .footer {
+      border-top: 1px solid var(--border);
+      background: rgba(15, 12, 11, 0.3);
+    }
+
+    .footer-inner {
+      min-height: 86px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .footer-brand {
+      color: #e8c4aa;
+      font-family: "Space Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    /* NOTIFICATIONS */
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 200;
+      width: min(360px, calc(100% - 40px));
+      padding: 16px 18px;
+      transform: translateY(20px);
+      border: 1px solid rgba(255, 177, 113, 0.28);
+      border-radius: 14px;
+      opacity: 0;
+      color: var(--text);
+      background: rgba(39, 27, 23, 0.96);
+      box-shadow: var(--shadow);
+      pointer-events: none;
+      transition:
+        opacity 0.25s,
+        transform 0.25s;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--orange-light);
+      font-size: 13px;
+    }
+
+    .toast p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 850px) {
+      .nav-inner {
+        min-height: 70px;
+      }
+
+      .nav-links {
+        gap: 17px;
+      }
+
+      .nav-status {
+        display: none;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 38px;
+        padding-top: 60px;
+      }
+
+      .hero-copy {
+        max-width: 700px;
+      }
+
+      .scene-card {
+        width: 100%;
+        min-height: 360px;
+      }
+
+      .section {
+        padding-top: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: min(100% - 28px, 1160px);
+      }
+
+      .nav-inner {
+        flex-wrap: wrap;
+        gap: 0;
+        padding-top: 13px;
+        padding-bottom: 12px;
+      }
+
+      .brand-icon {
+        width: 38px;
+        height: 38px;
+      }
+
+      .brand-name {
+        font-size: 13px;
+      }
+
+      .nav-links {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+        padding-top: 15px;
+      }
+
+      .nav-link {
+        font-size: 11px;
+      }
+
+      .hero {
+        padding-top: 48px;
+        padding-bottom: 52px;
+        gap: 32px;
+      }
+
+      .hero h1 {
+        font-size: clamp(42px, 12vw, 62px);
+        letter-spacing: -2.5px;
+      }
+
+      .hero-description {
+        font-size: 14px;
+      }
+
+      .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions .btn {
+        width: 100%;
+      }
+
+      .hero-meta {
+        gap: 13px;
+        font-size: 9px;
+      }
+
+      .scene-card {
+        min-height: 330px;
+      }
+
+      .window-glow {
+        top: 75px;
+        width: 145px;
+        height: 125px;
+      }
+
+      .cell-door {
+        width: 100px;
+        height: 155px;
+      }
+
+      .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .section-heading p {
+        font-size: 12px;
+      }
+
+      .locations {
+        grid-template-columns: 1fr;
+      }
+
+      .location-card {
+        min-height: 225px;
+        padding: 21px;
+      }
+
+      .mission {
+        grid-template-columns: 1fr;
+        padding: 22px;
+      }
+
+      .mission h2 {
+        font-size: 22px;
+      }
+
+      .mission-action .btn {
+        width: 100%;
+      }
+
+      .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        padding-top: 22px;
+        padding-bottom: 22px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVIGATION -->
+  <header class="navbar">
+    <div class="container nav-inner">
+
+      <a href="index.html" class="brand" aria-label="Escape the Prison home">
+        <div class="brand-icon" aria-hidden="true">⌘</div>
+
+        <div>
+          <div class="brand-name">ESCAPE THE PRISON</div>
+          <span class="brand-subtitle">PYTHON ADVENTURE</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
+        <a class="nav-link active" href="index.html">Home</a>
+        <a class="nav-link" href="#locations">Locations</a>
+        <a class="nav-link" href="#mission">Missions</a>
+        <a class="nav-link" href="#progress">Progress</a>
+      </nav>
+
+      <div class="nav-status">
+        <span class="status-dot"></span>
+        SYSTEM ONLINE
+      </div>
+
+    </div>
+  </header>
+
+
+  <main>
+
+    <!-- HERO / HOME PAGE -->
+    <section class="container hero">
+
+      <div class="hero-copy">
+
+        <div class="eyebrow">YOUR STORY STARTS HERE</div>
+
+        <h1>
+          YOUR FREEDOM.
+          <span>YOUR CODE.</span>
+        </h1>
+
+        <p class="hero-description">
+          Trapped behind concrete walls. Surrounded by locked doors.
+          Your only way out is your mind. Learn Python, solve
+          mysterious puzzles, and write your own escape story.
+        </p>
+
+        <div class="hero-actions">
+
+          <button class="btn btn-primary" id="startButton">
+            <span>▶</span>
+            INITIALIZE ESCAPE SEQUENCE
+          </button>
+
+          <a class="btn btn-secondary" href="#locations">
+            EXPLORE THE PRISON
+            <span>↗</span>
+          </a>
+
+        </div>
+
+        <div class="hero-meta">
+          <span>
+            <span class="meta-symbol">◈</span>
+            PYTHON LEARNING
+          </span>
+
+          <span>
+            <span class="meta-symbol">◉</span>
+            PUZZLE ADVENTURE
+          </span>
+
+          <span>
+            <span class="meta-symbol">⌁</span>
+            YOUR CHOICES
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- PRISON SCENE -->
+      <div class="scene-card" aria-label="Illustration of a prison cell at sunset">
+
+        <div class="scene-top">
+          <span class="scene-label">LOCATION_001 / CELL BLOCK</span>
+          <span class="scene-tag">RESTRICTED AREA</span>
+        </div>
+
+        <div class="window-glow"></div>
+
+        <div class="scene-floor"></div>
+
+        <div class="scene-light"></div>
+
+        <div class="cell-door"></div>
+
+        <div class="scene-caption">
+          <span>ENVIRONMENT STATUS</span>
+          <strong>LOCKED · 0% COMPLETE</strong>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- LOCATIONS -->
+    <section class="container section" id="locations">
+
+      <div class="section-heading">
+
+        <div>
+          <div class="eyebrow">THE ENVIRONMENT</div>
+          <h2>Explore Your Surroundings</h2>
+        </div>
+
+        <p>
+          Every corner holds a clue. Investigate your surroundings
+          and discover the tools you need to escape.
+        </p>
+
+      </div>
+
+
+      <div class="locations">
+
+        <!-- CELL DOOR -->
+        <article class="glass-card location-card">
+
+          <div class="location-top">
+            <div class="location-icon" aria-hidden="true">▤</div>
+            <span class="difficulty">CHALLENGE 01</span>
+          </div>
+
+          <h3>Containment Door</h3>
+
+          <p>
+            A reinforced steel door protects the exit. Find the
+            access code and discover how logical thinking can
+            open the way to freedom.
+          </p>
+
+          <div class="location-footer">
+            <span class="location-status">STATUS: LOCKED</span>
+
+            <button
+              class="text-button"
+              data-location="door"
+              type="button"
+            >
+              Investigate <span>→</span>
+            </button>
+          </div>
+
+        </article>
+
+
+        <!-- TERMINAL -->
+        <article class="glass-card location-card">
+
+          <div class="location-top">
+            <div class="location-icon" aria-hidden="true">⌨</div>
+            <span class="difficulty">CHALLENGE 02</span>
+          </div>
+
+          <h3>Abandoned Terminal</h3>
+
+          <p>
+            An old computer still has power. Use Python commands,
+            inspect the available clues, and prepare for the
+            challenges ahead.
+          </p>
+
+          <div class="location-footer">
+            <span class="location-status">STATUS: AVAILABLE</span>
+
+            <button
+              class="text-button"
+              data-location="terminal"
+              type="button"
+            >
+              Investigate <span>→</span>
+            </button>
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- MISSION -->
+    <section class="container section" id="mission">
+
+      <div class="section-heading">
+
+        <div>
+          <div class="eyebrow">MISSION CONTROL</div>
+          <h2>Your First Assignment</h2>
+        </div>
+
+      </div>
+
+
+      <article class="glass-card mission">
+
+        <div class="mission-content">
+
+          <div class="eyebrow">MISSION 001 · BEGINNER</div>
+
+          <h2>The First Signal</h2>
+
+          <p>
+            The terminal is waiting for your first command.
+            Start with a simple Python instruction and begin
+            your journey from beginner to escape artist.
+          </p>
+
+          <div class="mission-info">
+            <span>DIFFICULTY: EASY</span>
+            <span>SKILL: PRINT FUNCTION</span>
+            <span>REWARD: +100 XP</span>
+          </div>
+
+        </div>
+
+        <div class="mission-action">
+          <button class="btn btn-primary" id="missionButton" type="button">
+            START MISSION <span>→</span>
+          </button>
+        </div>
+
+      </article>
+
+
+      <!-- PROGRESS -->
+      <article class="glass-card progress-panel" id="progress">
+
+        <div class="progress-header">
+          <h3>Your Escape Progress</h3>
+          <span class="progress-number" id="progressNumber">0 / 100 XP</span>
+        </div>
+
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-label="Escape progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          id="progressTrack"
+        >
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <p class="progress-note" id="progressNote">
+          Your journey has not started yet. Initialize the escape sequence to begin.
+        </p>
+
+      </article>
+
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+
+      <div class="footer-brand">
+        ESCAPE THE PRISON // PYTHON ADVENTURE
+      </div>
+
+      <p>
+        Learn to code. Solve the mystery. Find your freedom.
+      </p>
+
+      <p>© <span id="year"></span> Escape the Prison</p>
+
+    </div>
+  </footer>
+
+
+  <!-- NOTIFICATION -->
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  >
+    <strong id="toastTitle">MISSION CONTROL</strong>
+    <p id="toastMessage"></p>
+  </div>
+
+
+  <script>
+    "use strict";
+
+    const startButton = document.getElementById("startButton");
+    const missionButton = document.getElementById("missionButton");
+    const progressFill = document.getElementById("progressFill");
+    const progressNumber = document.getElementById("progressNumber");
+    const progressNote = document.getElementById("progressNote");
+    const progressTrack = document.getElementById("progressTrack");
+
+    let toastTimer;
+
+    // Show a small on-screen notification.
+    function showToast(title, message) {
+      const toast = document.getElementById("toast");
+
+      document.getElementById("toastTitle").textContent = title;
+      document.getElementById("toastMessage").textContent = message;
+
+      toast.classList.add("show");
+
+      clearTimeout(toastTimer);
+
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 4000);
+    }
+
+    // Store basic demo progress in this browser.
+    function getProgress() {
+      try {
+        return Number(localStorage.getItem("escapePrisonXP")) || 0;
+      } catch {
+        return 0;
+      }
+    }
+
+    function setProgress(value) {
+      const safeValue = Math.max(0, Math.min(100, value));
+
+      try {
+        localStorage.setItem("escapePrisonXP", String(safeValue));
+      } catch {
+        // The interface still works if browser storage is unavailable.
+      }
+
+      progressFill.style.width = safeValue + "%";
+      progressNumber.textContent = safeValue + " / 100 XP";
+      progressTrack.setAttribute("aria-valuenow", String(safeValue));
+
+      if (safeValue === 0) {
+        progressNote.textContent =
+          "Your journey has not started yet. Initialize the escape sequence to begin.";
+      } else if (safeValue < 100) {
+        progressNote.textContent =
+          "Your adventure has started. More missions will help you progress.";
+      } else {
+        progressNote.textContent =
+          "Demo milestone reached! More escape challenges can be added next.";
+      }
+    }
+
+    // Begin the first demo sequence.
+    startButton.addEventListener("click", () => {
+      document.getElementById("mission").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+      showToast(
+        "ESCAPE SEQUENCE INITIALIZED",
+        "Mission 001 is ready. Continue to your first assignment."
+      );
+
+      if (getProgress() === 0) {
+        setProgress(10);
+      }
+    });
+
+    // Start the first mission demo.
+    missionButton.addEventListener("click", () => {
+      if (getProgress() < 25) {
+        setProgress(25);
+      }
+
+      showToast(
+        "MISSION 001",
+        'Your first Python goal: print("I will escape!") — the coding editor will be added in the next development step.'
+      );
+    });
+
+    // Location investigation buttons.
+    document.querySelectorAll("[data-location]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const location = button.dataset.location;
+
+        if (location === "door") {
+          showToast(
+            "CONTAINMENT DOOR",
+            "The door is locked. You will need to solve a coding puzzle to unlock it in a future game update."
+          );
+        } else {
+          showToast(
+            "ABANDONED TERMINAL",
+            'Terminal located. Your first practice command is: print("I will escape!")'
+          );
+        }
+      });
+    });
+
+    // Footer year.
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+
+    // Restore demo progress when the page opens.
+    setProgress(getProgress());
+  </script>
+
+</body>
+  </html>
