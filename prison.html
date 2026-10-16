@@ -4,1675 +4,501 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#100b0e">
-<meta name="description" content="Escape the Prison — an interactive Python coding adventure. Investigate your cell, discover clues, solve puzzles, and earn your freedom.">
 <title>Prison Cell | Escape the Prison</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --bg:#100b0e;
-  --bg2:#190e13;
-  --panel:rgba(37,23,30,.88);
-  --panel2:rgba(53,28,39,.75);
-  --maroon:#702d43;
-  --red:#c94e65;
-  --orange:#ff9b54;
-  --orange-light:#ffc18a;
-  --text:#fff1e7;
-  --muted:#b6a2aa;
-  --border:rgba(255,155,120,.18);
-  --green:#a8cf8b;
-  --radius:17px;
+  --bg: #100b0e;
+  --panel: #21141b;
+  --maroon: #702d43;
+  --orange: #ff9b54;
+  --orange-light: #ffc18a;
+  --text: #fff1e7;
+  --muted: #b6a2aa;
+  --border: rgba(255,155,120,.2);
+  --green: #a8cf8b;
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-html{scroll-behavior:smooth}
-
-body{
-  min-height:100vh;
-  color:var(--text);
+body {
+  min-height: 100vh;
+  color: var(--text);
   background:
-    radial-gradient(ellipse at 50% 0%,rgba(112,45,67,.22),transparent 50%),
-    radial-gradient(ellipse at 100% 65%,rgba(107,30,50,.12),transparent 40%),
+    radial-gradient(ellipse at top, #702d4338, transparent 50%),
     var(--bg);
-  font-family:"DM Sans",sans-serif;
-  overflow-x:hidden;
+  font-family: "DM Sans", sans-serif;
 }
 
-button,input,textarea{font:inherit}
-button,a{-webkit-tap-highlight-color:transparent}
-button{cursor:pointer}
-button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
-  outline:2px solid var(--orange);
-  outline-offset:3px;
-}
-a{color:inherit;text-decoration:none}
-
-.container{width:min(1440px,calc(100% - 32px));margin:auto}
-.mono{font-family:"Space Mono",monospace}
-
-.navbar{
-  position:sticky;
-  top:0;
-  z-index:50;
-  background:rgba(16,11,14,.92);
-  border-bottom:1px solid var(--border);
-  backdrop-filter:blur(18px);
+button, input {
+  font: inherit;
 }
 
-.nav-inner{
-  min-height:72px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:20px;
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.brand{display:flex;align-items:center;gap:11px}
-.brand-icon{
-  width:41px;height:41px;
-  display:grid;place-items:center;
-  border:1px solid rgba(255,155,84,.35);
-  border-radius:12px;
-  background:linear-gradient(140deg,rgba(255,155,84,.18),rgba(112,45,67,.2));
-  color:var(--orange-light);
-  font-size:22px;
-}
-.brand-name{font-size:13px;font-weight:800;letter-spacing:1px}
-.brand-subtitle{
-  display:block;margin-top:4px;
-  color:var(--muted);font-size:9px;letter-spacing:1.4px;
-  font-family:"Space Mono",monospace;
-}
-.nav-links{display:flex;align-items:center;gap:22px}
-.nav-links a{color:var(--muted);font-size:12px;font-weight:700}
-.nav-links a:hover,.nav-links a.active{color:var(--orange-light)}
-.status{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--green)}
-.status-dot{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 10px #a8cf8b66}
-
-.page-heading{
-  padding:27px 0 21px;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  gap:20px;
-}
-.eyebrow{
-  display:flex;align-items:center;gap:8px;
-  color:var(--orange-light);
-  font:10px "Space Mono",monospace;
-  letter-spacing:1.7px;
-  text-transform:uppercase;
-}
-.eyebrow:before{content:"";width:18px;height:1px;background:var(--orange)}
-h1{font-size:clamp(26px,4vw,39px);letter-spacing:-1.5px;margin-top:10px}
-.page-heading p{margin-top:7px;color:var(--muted);font-size:13px;line-height:1.7}
-.level-badge{
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:10px 13px;
-  background:rgba(112,45,67,.16);
-  color:var(--orange-light);
-  white-space:nowrap;
-  font:10px "Space Mono",monospace;
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 3px;
 }
 
-.glass{
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  background:linear-gradient(145deg,rgba(54,32,42,.9),rgba(26,17,22,.94));
-  box-shadow:0 18px 45px rgba(0,0,0,.19);
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.game-layout{
-  display:grid;
-  grid-template-columns:minmax(0,1.75fr) minmax(280px,.8fr);
-  gap:17px;
-  align-items:start;
+.container {
+  width: min(1400px, calc(100% - 28px));
+  margin: auto;
 }
 
-.scene-panel{overflow:hidden}
-.panel-heading{
-  display:flex;justify-content:space-between;align-items:center;gap:12px;
-  padding:16px 18px;border-bottom:1px solid var(--border);
-}
-.panel-heading h2{font-size:13px;font-weight:800}
-.small-label{font:9px "Space Mono",monospace;color:var(--muted);letter-spacing:1px}
-.live-label{color:var(--green);font:9px "Space Mono",monospace}
-
-.room{
-  position:relative;
-  min-height:420px;
-  height:clamp(420px,47vw,565px);
-  overflow:hidden;
-  isolation:isolate;
-  background:#21171b;
+.mono {
+  font-family: "Space Mono", monospace;
 }
 
-/* Stylized room environment */
-.back-wall{
-  position:absolute;inset:0 0 27%;
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #100b0eee;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(15px);
+}
+
+.nav-inner {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--orange-light);
+  background: #702d4338;
+  font-size: 22px;
+}
+
+.brand-name {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.brand-subtitle {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font: 9px "Space Mono", monospace;
+}
+
+.nav-links {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.nav-links a:hover {
+  color: var(--orange-light);
+}
+
+.status {
+  color: var(--green);
+  font: 9px "Space Mono", monospace;
+}
+
+.heading {
+  padding: 28px 0 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.eyebrow {
+  color: var(--orange-light);
+  font: 10px "Space Mono", monospace;
+  letter-spacing: 1.5px;
+}
+
+h1 {
+  margin-top: 10px;
+  font-size: clamp(27px, 4vw, 39px);
+  letter-spacing: -1px;
+}
+
+.heading p {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.badge {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--orange-light);
+  background: #702d4329;
+  white-space: nowrap;
+  font: 9px "Space Mono", monospace;
+}
+
+.glass {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #36202ae8, #1a1117f5);
+  box-shadow: 0 16px 40px #0003;
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(250px, .8fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.panel-heading {
+  min-height: 49px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-heading h2 {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.small-label {
+  color: var(--muted);
+  font: 9px "Space Mono", monospace;
+}
+
+.live-label {
+  color: var(--green);
+  font: 9px "Space Mono", monospace;
+}
+
+/* ================= ROOM ================= */
+
+.room {
+  position: relative;
+  height: clamp(400px, 48vw, 550px);
+  min-height: 400px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #21171b;
+}
+
+.back-wall {
+  position: absolute;
+  inset: 0 0 27%;
   background:
-    linear-gradient(90deg,rgba(0,0,0,.22),transparent 25%,transparent 75%,rgba(0,0,0,.3)),
-    repeating-linear-gradient(0deg,transparent 0 69px,rgba(255,255,255,.035) 70px 71px),
-    repeating-linear-gradient(90deg,transparent 0 94px,rgba(0,0,0,.12) 95px 97px),
-    linear-gradient(180deg,#392831,#2a1c22);
-}
-.back-wall:after{
-  content:"";
-  position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.2));
-}
-.floor{
-  position:absolute;bottom:0;left:0;right:0;height:29%;
-  background:
-    repeating-linear-gradient(0deg,transparent 0 34px,rgba(0,0,0,.19) 35px 37px),
-    repeating-linear-gradient(90deg,transparent 0 105px,rgba(0,0,0,.15) 106px 108px),
-    linear-gradient(180deg,#302126,#171115);
-  clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
-}
-.floor:before{
-  content:"";position:absolute;left:0;right:0;top:0;height:3px;
-  background:#6c4a50;opacity:.45;
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 68px,
+      #ffffff08 69px 70px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 95px,
+      #0002 96px 98px
+    ),
+    linear-gradient(#392831, #2a1c22);
 }
 
-.ceiling-light{
-  position:absolute;top:0;left:45%;width:150px;height:5px;
-  background:#ffc18a;box-shadow:0 0 45px 17px #e8895940;
-}
-.room-number{
-  position:absolute;top:16px;left:17px;z-index:3;
-  color:#dfc5c8;font:9px "Space Mono",monospace;letter-spacing:1px;
-}
-.room-warning{
-  position:absolute;top:13px;right:14px;z-index:3;
-  border:1px solid #d86a4838;border-radius:6px;
-  padding:7px 9px;background:#190e1399;
-  color:#ffb19c;font:9px "Space Mono",monospace;
+.floor {
+  position: absolute;
+  inset: auto 0 0;
+  height: 29%;
+  border-top: 3px solid #6c4a5070;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 34px,
+      #0003 35px 37px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 105px,
+      #0002 106px 108px
+    ),
+    linear-gradient(#302126, #171115);
 }
 
-/* Window and bars */
-.window-object{
-  position:absolute;top:13%;left:39%;width:23%;height:31%;
-  min-width:92px;min-height:90px;
-  border:7px solid #594047;
-  border-radius:3px;
+.ceiling-light {
+  position: absolute;
+  top: 0;
+  left: 45%;
+  width: 130px;
+  height: 5px;
+  background: var(--orange-light);
+  box-shadow: 0 0 40px 15px #e8895940;
+}
+
+.room-number,
+.room-warning {
+  position: absolute;
+  top: 14px;
+  z-index: 3;
+  font: 8px "Space Mono", monospace;
+}
+
+.room-number {
+  left: 13px;
+  color: #dfc5c8;
+}
+
+.room-warning {
+  right: 12px;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: #ffb19c;
+  background: #190e1399;
+}
+
+.room-object {
+  position: absolute;
+  z-index: 4;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.room-object:hover,
+.room-object:focus-visible {
+  filter: brightness(1.3);
+}
+
+.object-tip {
+  position: absolute;
+  left: 50%;
+  bottom: 105%;
+  transform: translateX(-50%);
+  padding: 5px 7px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--orange-light);
+  background: #160e12;
+  white-space: nowrap;
+  font: 8px "Space Mono", monospace;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.room-object:hover .object-tip,
+.room-object:focus-visible .object-tip {
+  opacity: 1;
+}
+
+/* Window */
+
+.window-object {
+  top: 14%;
+  left: 39%;
+  width: 23%;
+  height: 30%;
+  min-width: 85px;
+  border: 7px solid #594047;
+  border-radius: 3px;
   background:
-    linear-gradient(90deg,transparent 46%,#38232d 47% 52%,transparent 53%),
-    linear-gradient(0deg,transparent 46%,#38232d 47% 52%,transparent 53%),
-    linear-gradient(180deg,#b97d7d,#744752 65%,#472c39);
-  box-shadow:0 0 28px #c94e6520,inset 0 0 15px #120a0d55;
-}
-.window-object:before{
-  content:"";position:absolute;inset:0;
-  background:repeating-linear-gradient(90deg,transparent 0 20%,#171014 21% 24%,transparent 25% 45%);
-  opacity:.8;
-}
-.window-object:after{
-  content:"";position:absolute;left:-13px;right:-13px;bottom:-8px;height:7px;
-  background:#76515a;
+    linear-gradient(90deg, transparent 46%, #38232d 47% 52%, transparent 53%),
+    linear-gradient(0deg, transparent 46%, #38232d 47% 52%, transparent 53%),
+    linear-gradient(#b97d7d, #744752 65%, #472c39);
+  box-shadow: 0 0 25px #c94e6520;
 }
 
 /* Bed */
-.bed-object{
-  position:absolute;left:4%;bottom:17%;width:40%;height:25%;
-  transform:skewY(-2deg);
+
+.bed-object {
+  left: 4%;
+  bottom: 18%;
+  width: 40%;
+  height: 24%;
 }
-.bed-head{
-  position:absolute;left:0;top:5%;width:13%;height:80%;
-  border:3px solid #584047;border-radius:3px;
-  background:linear-gradient(90deg,#37252b,#75535a,#35232a);
+
+.bed-head {
+  position: absolute;
+  left: 0;
+  top: 5%;
+  width: 13%;
+  height: 80%;
+  border: 3px solid #584047;
+  background: #493039;
 }
-.bed-mattress{
-  position:absolute;left:10%;right:0;top:25%;height:36%;
-  border:2px solid #63444c;border-radius:5px;
-  background:linear-gradient(180deg,#b4a0a0,#6f5b65);
-  box-shadow:0 8px 0 #38232c;
+
+.bed-mattress {
+  position: absolute;
+  left: 10%;
+  right: 0;
+  top: 25%;
+  height: 36%;
+  border: 2px solid #63444c;
+  border-radius: 4px;
+  background: linear-gradient(#b4a0a0, #6f5b65);
+  box-shadow: 0 8px #38232c;
 }
-.bed-blanket{
-  position:absolute;left:44%;right:2%;top:28%;height:30%;
-  border-radius:3px;background:linear-gradient(180deg,#77404e,#482735);
+
+.bed-blanket {
+  position: absolute;
+  left: 44%;
+  right: 2%;
+  top: 28%;
+  height: 30%;
+  border-radius: 3px;
+  background: linear-gradient(#77404e, #482735);
 }
-.bed-leg{
-  position:absolute;bottom:0;width:6px;height:37%;
-  background:#443139;border:1px solid #78515a;
+
+.bed-leg {
+  position: absolute;
+  bottom: 0;
+  width: 6px;
+  height: 37%;
+  background: #443139;
 }
-.bed-leg.one{left:14%}.bed-leg.two{right:6%}
+
+.bed-leg.one { left: 14%; }
+.bed-leg.two { right: 6%; }
 
 /* Desk */
-.desk-object{
-  position:absolute;right:5%;bottom:18%;width:34%;height:25%;
-}
-.desk-top{
-  position:absolute;left:0;right:0;top:24%;height:12%;
-  border:2px solid #684449;
-  background:linear-gradient(180deg,#825453,#42282f);
-  transform:skewY(-2deg);
-}
-.desk-leg{
-  position:absolute;top:34%;bottom:0;width:7px;
-  background:linear-gradient(90deg,#38242b,#76515a,#39242b);
-}
-.desk-leg.left{left:12%}.desk-leg.right{right:12%}
-.desk-drawer{
-  position:absolute;left:22%;right:22%;top:39%;height:24%;
-  border:2px solid #644149;background:#472b34;
-}
-.desk-drawer:after{
-  content:"";position:absolute;top:45%;left:45%;width:10px;height:3px;
-  background:#d3a17a;
+
+.desk-object {
+  right: 5%;
+  bottom: 18%;
+  width: 34%;
+  height: 25%;
 }
 
-/* Terminal on desk */
-.terminal-object{
-  position:absolute;right:26%;bottom:42%;width:70px;height:56px;
-  border:4px solid #423038;border-radius:5px;
-  background:#11191a;box-shadow:0 0 17px #8fcf9b18;
+.desk-top {
+  position: absolute;
+  inset: 24% 0 auto;
+  height: 12%;
+  background: linear-gradient(#825453, #42282f);
+  border: 2px solid #684449;
 }
-.terminal-screen{
-  position:absolute;inset:4px;
-  display:flex;align-items:center;justify-content:center;
-  color:#a8cf8b;background:linear-gradient(135deg,#1a3028,#101b19);
-  font:9px "Space Mono",monospace;
+
+.desk-leg {
+  position: absolute;
+  top: 34%;
+  bottom: 0;
+  width: 7px;
+  background: #57404a;
 }
-.terminal-object:after{
-  content:"";position:absolute;left:24px;bottom:-8px;width:15px;height:5px;background:#574049;
+
+.desk-leg.left { left: 12%; }
+.desk-leg.right { right: 12%; }
+
+.desk-drawer {
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 39%;
+  height: 24%;
+  border: 2px solid #644149;
+  background: #472b34;
+}
+
+/* Terminal */
+
+.terminal-object {
+  right: 26%;
+  bottom: 42%;
+  width: 65px;
+  height: 52px;
+  border: 4px solid #423038;
+  border-radius: 5px;
+  background: #11191a;
+}
+
+.terminal-screen {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  place-items: center;
+  color: var(--green);
+  background: #14251d;
+  font: 10px "Space Mono", monospace;
 }
 
 /* Door */
-.door-object{
-  position:absolute;right:4%;top:17%;width:19%;height:50%;
-  min-width:64px;
-  border:5px solid #62414b;border-bottom:0;border-radius:4px 4px 0 0;
+
+.door-object {
+  right: 4%;
+  top: 17%;
+  width: 19%;
+  height: 50%;
+  min-width: 62px;
+  border: 5px solid #62414b;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
   background:
-    repeating-linear-gradient(90deg,transparent 0 13px,#171014 14px 19px),
-    linear-gradient(90deg,#4a303a,#78505a,#3b2730);
-  box-shadow:inset 0 0 25px #10090c88,0 0 20px #0003;
-}
-.door-object:before{
-  content:"";position:absolute;top:48%;right:12%;width:8px;height:8px;
-  border:2px solid #dca16f;border-radius:50%;background:#7d4a43;
-}
-.door-object:after{
-  content:"CELL 01";position:absolute;top:10%;left:0;right:0;
-  text-align:center;color:#d6b6ba;font:8px "Space Mono",monospace;
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 13px,
+      #171014 14px 19px
+    ),
+    linear-gradient(90deg, #4a303a, #78505a, #3b2730);
+  box-shadow: inset 0 0 20px #10090c88;
 }
 
-/* Interactive object controls */
-.room-object{
-  cursor:pointer;
-  transition:filter .2s,outline-color .2s;
-}
-.room-object:hover,.room-object:focus-visible{
-  filter:brightness(1.22);
-  outline:1px solid #ffb87b;
-  outline-offset:4px;
-}
-.room-object:focus{outline-offset:4px}
-.object-tip{
-  position:absolute;left:50%;bottom:105%;
-  transform:translateX(-50%);
-  padding:5px 7px;border:1px solid #ffb87b40;border-radius:5px;
-  color:#ffe0c4;background:#160e12;
-  white-space:nowrap;font:8px "Space Mono",monospace;
-  opacity:0;pointer-events:none;transition:opacity .2s;
-}
-.room-object:hover .object-tip,.room-object:focus-visible .object-tip{opacity:1}
-
-.room-hint{
-  position:absolute;left:13px;bottom:12px;z-index:4;
-  padding:9px 11px;border:1px solid #ffb87b30;border-radius:8px;
-  color:#e7cbd0;background:#160e12df;
-  font:9px "Space Mono",monospace;
+.door-object::after {
+  content: "CELL 01";
+  position: absolute;
+  top: 10%;
+  left: 0;
+  right: 0;
+  color: #d6b6ba;
+  text-align: center;
+  font: 8px "Space Mono", monospace;
 }
 
-.scene-footer{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:13px 17px;color:var(--muted);font:9px "Space Mono",monospace;
-  border-top:1px solid var(--border);
-}
-.scene-footer strong{color:var(--orange-light);font-weight:400}
-
-.sidebar{display:grid;gap:15px}
-.side-body{padding:16px}
-.player-row{display:flex;align-items:center;gap:12px}
-.avatar{
-  width:43px;height:43px;display:grid;place-items:center;flex-shrink:0;
-  border:1px solid #ff9b5440;border-radius:12px;
-  color:var(--orange-light);background:#ff9b5412;font-size:20px;
-}
-.player-name{font-size:13px;font-weight:800}
-.player-rank{margin-top:5px;color:var(--muted);font:9px "Space Mono",monospace}
-.xp-pill{
-  margin-left:auto;padding:7px 8px;border:1px solid var(--border);
-  border-radius:7px;color:var(--orange-light);font:9px "Space Mono",monospace;
-}
-.xp-track{height:5px;margin-top:16px;background:#ffffff0d;border-radius:20px;overflow:hidden}
-.xp-fill{height:100%;width:0;background:linear-gradient(90deg,var(--maroon),var(--orange));transition:width .3s}
-.xp-note{margin-top:9px;color:var(--muted);font-size:10px}
-
-.object-list{display:grid;gap:8px}
-.object-entry{
-  display:flex;align-items:center;gap:10px;padding:10px;
-  border:1px solid #ffffff0b;border-radius:10px;background:#ffffff03;
-}
-.object-entry .icon{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:#ff9b5410;color:var(--orange-light)}
-.object-entry strong{display:block;font-size:11px}
-.object-entry small{display:block;margin-top:4px;color:var(--muted);font-size:9px}
-.object-entry .state{margin-left:auto;color:#c19aa6;font:8px "Space Mono",monospace}
-.object-entry.found{border-color:#a8cf8b30}
-.object-entry.found .state{color:var(--green)}
-
-.mission-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
-.mission-item:last-child{margin-bottom:0}
-.check{
-  width:18px;height:18px;display:grid;place-items:center;flex-shrink:0;
-  border:1px solid #ffffff24;border-radius:5px;color:transparent;font-size:11px;
-}
-.mission-item.done .check{border-color:#a8cf8b66;color:#a8cf8b;background:#a8cf8b13}
-.mission-item strong{font-size:11px;font-weight:700}
-.mission-item p{margin-top:4px;color:var(--muted);font-size:10px;line-height:1.6}
-
-.action-button,.btn{
-  min-height:43px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:0 14px;border:1px solid transparent;border-radius:10px;
-  font-size:11px;font-weight:800;transition:.2s;
-}
-.primary{
-  color:#25140f;background:linear-gradient(135deg,var(--orange-light),var(--orange));
-}
-.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
-.secondary{border-color:var(--border);color:var(--text);background:#ffffff05}
-.secondary:hover{background:#ff9b5410;border-color:#ff9b5466}
-.full{width:100%}
-
-.terminal-panel{margin-top:17px;overflow:hidden}
-.terminal-toolbar{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:15px 17px;border-bottom:1px solid var(--border);
-}
-.terminal-title{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800}
-.terminal-dots{display:flex;gap:5px}
-.terminal-dots i{width:7px;height:7px;border-radius:50%;background:#bd6a6a}
-.terminal-dots i:nth-child(2){background:#d6a35f}
-.terminal-dots i:nth-child(3){background:#8db58a}
-.terminal-status{font:9px "Space Mono",monospace;color:var(--green)}
-.terminal-content{padding:17px}
-.terminal-intro{color:var(--muted);font-size:11px;line-height:1.8;margin-bottom:12px}
-.terminal-intro code{color:var(--orange-light);font-family:"Space Mono",monospace}
-.terminal-output{
-  min-height:110px;max-height:190px;overflow:auto;
-  padding:13px;border:1px solid #a8cf8b1c;border-radius:9px;
-  color:#d7e7d3;background:#0c1210;
-  font:11px/1.8 "Space Mono",monospace;white-space:pre-wrap;overflow-wrap:anywhere;
-}
-.terminal-line{color:#a8cf8b}
-.terminal-error{color:#ff9999}
-.terminal-success{color:#ffd09b}
-.terminal-form{display:flex;gap:8px;margin-top:11px}
-.terminal-form input{
-  width:100%;min-width:0;min-height:45px;padding:10px 12px;
-  border:1px solid #a8cf8b2b;border-radius:9px;
-  color:#cde7c4;background:#0c1210;
-  font:12px "Space Mono",monospace;
-}
-.terminal-form button{flex-shrink:0}
-.terminal-help{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
-.command-chip{
-  min-height:34px;padding:6px 9px;border:1px solid var(--border);border-radius:7px;
-  color:#d7b5c0;background:#ffffff04;font:9px "Space Mono",monospace;
-}
-.command-chip:hover{border-color:#ff9b5477;color:var(--orange-light)}
-
-.log-panel{margin-top:17px}
-.log-body{padding:15px}
-.log-list{display:grid;gap:10px}
-.log-line{display:flex;gap:9px;color:var(--muted);font-size:10px;line-height:1.6}
-.log-line span{color:var(--orange-light);font-family:"Space Mono",monospace;flex-shrink:0}
-.log-empty{color:var(--muted);font-size:11px}
-
-.bottom-actions{
-  display:flex;justify-content:space-between;align-items:center;gap:12px;
-  padding:22px 0 28px;
-}
-.bottom-actions p{color:var(--muted);font-size:10px;line-height:1.7}
-.action-group{display:flex;flex-wrap:wrap;gap:9px}
-
-.modal-backdrop{
-  position:fixed;inset:0;z-index:100;
-  display:none;align-items:center;justify-content:center;
-  padding:18px;background:#080508d9;backdrop-filter:blur(8px);
-}
-.modal-backdrop.open{display:flex}
-.modal{
-  width:min(440px,100%);padding:23px;
-  border:1px solid #ff9b5444;border-radius:18px;
-  background:linear-gradient(145deg,#351e29,#160f13);
-  box-shadow:0 25px 90px #0009;
-}
-.modal-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.modal-top h2{font-size:18px}
-.close-modal{
-  width:35px;height:35px;border:1px solid var(--border);border-radius:9px;
-  color:var(--text);background:#ffffff05;font-size:20px;
-}
-.modal-description{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.8}
-.modal-content{margin-top:17px}
-.modal-content label{display:block;margin-bottom:8px;color:var(--orange-light);font-size:11px}
-.modal-input{
-  width:100%;min-height:47px;padding:12px;border:1px solid var(--border);
-  border-radius:9px;color:var(--text);background:#100b0e;
-}
-.modal-feedback{margin-top:12px;min-height:20px;color:var(--muted);font-size:11px;line-height:1.6}
-.modal-actions{display:flex;gap:9px;margin-top:15px}
-.modal-actions button{flex:1}
-
-.toast{
-  position:fixed;right:18px;bottom:18px;z-index:150;
-  width:min(350px,calc(100% - 36px));padding:15px 17px;
-  border:1px solid #ff9b5444;border-radius:13px;
-  background:#21141bef;box-shadow:0 15px 45px #0006;
-  opacity:0;transform:translateY(12px);pointer-events:none;transition:.22s;
-}
-.toast.show{opacity:1;transform:translateY(0)}
-.toast strong{display:block;color:var(--orange-light);font-size:12px}
-.toast p{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.6}
-
-.footer{border-top:1px solid var(--border);padding:20px 0;color:var(--muted);font-size:10px}
-.footer-inner{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
-.footer-brand{color:#e8c4aa;font:9px "Space Mono",monospace;letter-spacing:1px}
-
-@media(max-width:1000px){
-  .game-layout{grid-template-columns:minmax(0,1.4fr) minmax(250px,.8fr)}
-  .room{min-height:380px;height:430px}
-  .nav-links{gap:13px}
-}
-@media(max-width:760px){
-  .nav-inner{flex-wrap:wrap;padding:12px 0}
-  .nav-links{order:3;width:100%;justify-content:space-between;padding-top:6px}
-  .nav-links a{font-size:11px}
-  .status{font-size:9px}
-  .game-layout{grid-template-columns:1fr}
-  .room{height:clamp(370px,90vw,490px);min-height:370px}
-  .sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .sidebar .mission-card{grid-column:1/-1}
-}
-@media(max-width:480px){
-  .container{width:calc(100% - 22px)}
-  .brand-name{font-size:11px}
-  .brand-subtitle{font-size:8px}
-  .brand-icon{width:36px;height:36px}
-  .status{display:none}
-  .page-heading{align-items:flex-start;flex-direction:column}
-  h1{font-size:29px}
-  .level-badge{font-size:9px}
-  .panel-heading{padding:13px}
-  .room{height:390px;min-height:390px}
-  .window-object{left:35%;width:27%;height:27%}
-  .bed-object{left:2%;width:43%}
-  .desk-object{right:3%;width:36%}
-  .door-object{right:2%;width:19%}
-  .terminal-object{width:55px;height:46px;right:25%}
-  .room-hint{font-size:8px;max-width:70%;line-height:1.6}
-  .sidebar{grid-template-columns:1fr}
-  .sidebar .mission-card{grid-column:auto}
-  .terminal-form{flex-wrap:wrap}
-  .terminal-form button{width:100%}
-  .bottom-actions{align-items:flex-start;flex-direction:column}
-  .action-group{width:100%}
-  .action-group button{flex:1}
-}
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}
-}
-</style>
-</head>
-
-<body>
-<header class="navbar">
-  <div class="container nav-inner">
-    <a href="index.html" class="brand" aria-label="Return to Escape the Prison home">
-      <div class="brand-icon" aria-hidden="true">⌘</div>
-      <div>
-        <div class="brand-name">ESCAPE THE PRISON</div>
-        <span class="brand-subtitle">PYTHON ADVENTURE</span>
-      </div>
-    </a>
-
-    <nav class="nav-links" aria-label="Main navigation">
-      <a href="index.html">Home</a>
-      <a href="#room" class="active">Prison Room</a>
-      <a href="#terminal">Terminal</a>
-      <a href="#mission">Mission</a>
-    </nav>
-
-    <div class="status"><span class="status-dot"></span> GAME ONLINE</div>
-  </div>
-</header>
-
-<main class="container">
-  <section class="page-heading">
-    <div>
-      <div class="eyebrow">LEVEL 01 · CONTAINMENT BLOCK</div>
-      <h1>THE PRISON CELL<span style="color:var(--orange)">.</span></h1>
-      <p>Investigate the room. Collect clues. Use your code to find a way out.</p>
-    </div>
-    <div class="level-badge">CHAPTER 01 / <span id="levelStatus">IN PROGRESS</span></div>
-  </section>
-
-  <div class="game-layout">
-    <section class="glass scene-panel" id="room">
-      <div class="panel-heading">
-        <h2>◈ CELL ENVIRONMENT</h2>
-        <span class="live-label">● INTERACTIVE SCENE</span>
-      </div>
-
-      <div class="room" aria-label="Interactive illustrated prison room">
-        <div class="back-wall"></div>
-        <div class="ceiling-light"></div>
-        <div class="floor"></div>
-
-        <div class="room-number">BLOCK A / CELL 001</div>
-        <div class="room-warning">RESTRICTED ZONE</div>
-
-        <button class="window-object room-object" data-object="window" aria-label="Investigate barred window" type="button">
-          <span class="object-tip">BARRED WINDOW</span>
-        </button>
-
-        <button class="bed-object room-object" data-object="bed" aria-label="Investigate prison bed" type="button">
-          <span class="object-tip">OLD BED</span>
-          <span class="bed-head"></span>
-          <span class="bed-mattress"></span>
-          <span class="bed-blanket"></span>
-          <span class="bed-leg one"></span>
-          <span class="bed-leg two"></span>
-        </button>
-
-        <button class="desk-object room-object" data-object="desk" aria-label="Investigate desk and drawer" type="button">
-          <span class="object-tip">WOODEN DESK</span>
-          <span class="desk-top"></span>
-          <span class="desk-leg left"></span>
-          <span class="desk-leg right"></span>
-          <span class="desk-drawer"></span>
-        </button>
-
-        <button class="terminal-object room-object" data-object="computer" aria-label="Investigate abandoned computer" type="button">
-          <span class="object-tip">ABANDONED TERMINAL</span>
-          <span class="terminal-screen">>_</span>
-        </button>
-
-        <button class="door-object room-object" data-object="door" aria-label="Investigate locked cell door" type="button">
-          <span class="object-tip">LOCKED EXIT</span>
-        </button>
-        <!-- 2D STICKMAN -->
-<div class="stickman" id="stickman"
-     role="img" aria-label="Your stickman character">
-
-  <svg viewBox="0 0 46 82" aria-hidden="true">
-    <!-- Head -->
-    <circle class="head" cx="23" cy="13" r="9"/>
-
-    <!-- Body -->
-    <path class="body-part" d="M23 23 L23 49"/>
-
-    <!-- Arms -->
-    <path class="body-part arm-left"
-          d="M23 30 L10 42"/>
-
-    <path class="body-part arm-right"
-          d="M23 30 L36 42"/>
-
-    <!-- Legs -->
-    <path class="body-part leg-left"
-          d="M23 49 L12 70"/>
-
-    <path class="body-part leg-right"
-          d="M23 49 L34 70"/>
-  </svg>
-</div>
-
-<!-- PLATFORMS FOR THE CHALLENGE MODE -->
-<div class="platform platform-one"></div>
-<div class="platform platform-two"></div>
-<div class="platform platform-three"></div>
-
-<div class="platform-exit" id="platformExit">
-  EXIT → REACH ME
-</div>
-
-        <div class="room-hint">TIP: TAP OBJECTS TO INVESTIGATE</div>
-      </div>
-
-      <div class="scene-footer">
-        <span>ENVIRONMENT</span>
-        <strong id="sceneStatus">4 OBJECTS UNDISCOVERED</strong>
-        <span>◈ LEVEL 01</span>
-        <!-- STICKMAN CONTROLS -->
-<div class="game-controls">
-
-  <div class="control-group">
-    <button class="game-control"
-            type="button"
-            id="moveLeft"
-            aria-label="Move left">◀ LEFT</button>
-
-    <button class="game-control"
-            type="button"
-            id="moveRight"
-            aria-label="Move right">RIGHT ▶</button>
-
-    <button class="game-control"
-            type="button"
-            id="jumpButton">⬆ JUMP</button>
-  </div>
-
-  <div class="control-group">
-    <button class="game-control"
-            type="button"
-            id="modeButton">
-      ENTER PLATFORM MODE
-    </button>
-  </div>
-
-  <p class="control-hint" id="controlHint">
-    Use the buttons or your keyboard: A/D or ←/→ to move, Space to jump.
-  </p>
-
-</div>
-      </div>
-    </section>
-
-    <aside class="sidebar">
-      <section class="glass">
-        <div class="panel-heading"><h2>◈ PLAYER PROFILE</h2><span class="small-label">LOCAL SAVE</span></div>
-        <div class="side-body">
-          <div class="player-row">
-            <div class="avatar">♟</div>
-            <div>
-              <div class="player-name">The Prisoner</div>
-              <div class="player-rank" id="rankText">ROOKIE ESCAPE ARTIST</div>
-            </div>
-            <div class="xp-pill"><span id="xpValue">0</span> XP</div>
-          </div>
-          <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
-          <p class="xp-note" id="xpNote">Complete tasks to earn experience.</p>
-        </div>
-      </section>
-
-      <section class="glass">
-        <div class="panel-heading"><h2>▣ INVENTORY</h2><span class="small-label" id="inventoryCount">0 ITEMS</span></div>
-        <div class="side-body">
-          <div class="object-list" id="inventoryList">
-            <div class="object-entry">
-              <div class="icon">□</div>
-              <div><strong>Empty inventory</strong><small>Investigate objects to find clues.</small></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="glass mission-card" id="mission">
-        <div class="panel-heading"><h2>◈ MISSION CONTROL</h2><span class="small-label">001</span></div>
-        <div class="side-body">
-          <div class="mission-item" id="taskInspect">
-            <span class="check">✓</span>
-            <div><strong>Inspect your surroundings</strong><p>Find clues hidden in the cell.</p></div>
-          </div>
-          <div class="mission-item" id="taskCode">
-            <span class="check">✓</span>
-            <div><strong>Activate the terminal</strong><p>Use your first Python command.</p></div>
-          </div>
-          <div class="mission-item" id="taskDesk">
-            <span class="check">✓</span>
-            <div><strong>Discover the access code</strong><p>Investigate the desk for a clue.</p></div>
-          </div>
-          <div class="mission-item" id="taskDoor">
-            <span class="check">✓</span>
-            <div><strong>Unlock the cell door</strong><p>Enter the discovered code.</p></div>
-          </div>
-        </div>
-      </section>
-    </aside>
-  </div>
-
-  <section class="glass terminal-panel" id="terminal">
-    <div class="terminal-toolbar">
-      <div class="terminal-title">
-        <span class="terminal-dots"><i></i><i></i><i></i></span>
-        PYTHON TERMINAL
-      </div>
-      <span class="terminal-status">● SIMULATION READY</span>
-    </div>
-    <div class="terminal-content">
-      <p class="terminal-intro">
-        Welcome to the abandoned terminal. Enter <code>help</code> to see available commands.
-        Complete the first challenge by entering <code>print("I will escape!")</code>.
-        This is a safe, simulated Python learning terminal; it does not execute arbitrary Python.
-      </p>
-
-      <div class="terminal-output" id="terminalOutput" role="log" aria-live="polite">ESCAPE OS [Version 1.0]
-Type help to see available commands.
-Mission: make the terminal print "I will escape!"</div>
-
-      <form class="terminal-form" id="terminalForm">
-        <input id="terminalInput" type="text" maxlength="180" autocomplete="off" spellcheck="false" aria-label="Enter a simulated Python command" placeholder='print("I will escape!")'>
-        <button class="action-button primary" type="submit">RUN COMMAND ↗</button>
-      </form>
-
-      <div class="terminal-help">
-        <button type="button" class="command-chip" data-command="help">help</button>
-        <button type="button" class="command-chip" data-command='print("I will escape!")'>print(...)</button>
-        <button type="button" class="command-chip" data-command="look">look</button>
-        <button type="button" class="command-chip" data-command="inventory">inventory</button>
-        <button type="button" class="command-chip" data-command="status">status</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="glass log-panel">
-    <div class="panel-heading"><h2>▤ DISCOVERY LOG</h2><span class="small-label">RECENT EVENTS</span></div>
-    <div class="log-body">
-      <div class="log-list" id="logList" aria-live="polite">
-        <p class="log-empty">Your adventure has begun. Discoveries will appear here.</p>
-      </div>
-    </div>
-  </section>
-
-  <div class="bottom-actions">
-    <p>Progress is saved locally in this browser when storage is available.<br>Python commands are simulated for this learning game.</p>
-    <div class="action-group">
-      <button type="button" class="action-button secondary" id="resetButton">↻ RESET GAME</button>
-      <a href="index.html" class="action-button primary">← HOME</a>
-    </div>
-  </div>
-</main>
-
-<footer class="footer">
-  <div class="container footer-inner">
-    <div class="footer-brand">ESCAPE THE PRISON // PYTHON ADVENTURE</div>
-    <p>Learn to code. Solve the mystery. Find your freedom.</p>
-    <p>© <span id="year"></span> Escape the Prison</p>
-  </div>
-</footer>
-
-<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <section class="modal">
-    <div class="modal-top">
-      <h2 id="modalTitle">INVESTIGATION</h2>
-      <button type="button" class="close-modal" id="closeModal" aria-label="Close dialog">×</button>
-    </div>
-    <p class="modal-description" id="modalDescription"></p>
-    <div class="modal-content" id="modalContent"></div>
-    <div class="modal-feedback" id="modalFeedback" aria-live="polite"></div>
-    <div class="modal-actions" id="modalActions"></div>
-  </section>
-</div>
-
-<div class="toast" id="toast" role="status" aria-live="polite">
-  <strong id="toastTitle">MISSION CONTROL</strong>
-  <p id="toastMessage"></p>
-</div>
-
-<script>
-"use strict";
-
-/* -------------------------------------------------------
-   ESCAPE THE PRISON
-   Browser-based game state and simulated Python terminal.
-------------------------------------------------------- */
-
-const $ = (selector) => document.querySelector(selector);
-
-const OBJECTS = {
-  bed: {
-    title: "OLD PRISON BED",
-    description: "The mattress is worn out, but something seems tucked beneath its edge.",
-    item: "Folded Note",
-    icon: "▤",
-    clue: 'A folded note reads: "The desk remembers what the guards forget."'
-  },
-  window: {
-    title: "BARRED WINDOW",
-    description: "You can see the evening sky through thick metal bars. The window cannot be opened from here.",
-    item: "Window Observation",
-    icon: "▥",
-    clue: "The window offers a view of the cell block. There is no safe exit here; you need to solve the door puzzle."
-  },
-  desk: {
-    title: "WOODEN DESK",
-    description: "Inside the drawer, you discover a small card with an access code.",
-    item: "Access Card",
-    icon: "▣",
-    clue: "ACCESS CODE DISCOVERED: 4312. Keep this code for the locked door."
-  },
-  computer: {
-    title: "ABANDONED TERMINAL",
-    description: "The old computer still has power. Its screen displays a Python prompt.",
-    item: "Terminal Access",
-    icon: "⌨",
-    clue: 'The terminal is active. Your first challenge is print("I will escape!").'
-  },
-  door: {
-    title: "CONTAINMENT DOOR",
-    description: "A heavy steel door blocks the exit. A keypad is mounted beside the frame.",
-    item: null,
-    icon: "▤",
-    clue: "The keypad needs a four-digit access code. Investigate the desk to discover it."
-  }
-};
-
-const INITIAL_STATE = {
-  xp: 0,
-  found: [],
-  inventory: [],
-  codeComplete: false,
-  doorUnlocked: false,
-  escaped: false,
-  logs: []
-};
-
-let state = loadState();
-let toastTimer = null;
-let activeObject = null;
-let lastFocusedElement = null;
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem("escapePrisonCellSaveV1");
-    if (raw) {
-      const saved = JSON.parse(raw);
-      if (
-        saved &&
-        Array.isArray(saved.found) &&
-        Array.isArray(saved.inventory) &&
-        Array.isArray(saved.logs) &&
-        Number.isFinite(saved.xp)
-      ) {
-        return {
-          ...INITIAL_STATE,
-          ...saved,
-          xp: Math.max(0, Math.min(100, saved.xp))
-        };
-      }
-    }
-  } catch (error) {
-    // Play normally if browser storage is disabled or invalid.
-  }
-  return structuredCloneSafe(INITIAL_STATE);
-}
-
-function structuredCloneSafe(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-
-function saveState() {
-  try {
-    localStorage.setItem("escapePrisonCellSaveV1", JSON.stringify(state));
-  } catch (error) {
-    // The current session remains playable without persistent storage.
-  }
-}
-
-function addLog(message) {
-  const time = new Date().toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-
-  state.logs.unshift({ time, message });
-  state.logs = state.logs.slice(0, 12);
-  renderLog();
-  saveState();
-}
-
-function showToast(title, message) {
-  $("#toastTitle").textContent = title;
-  $("#toastMessage").textContent = message;
-
-  const toast = $("#toast");
-  toast.classList.add("show");
-
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 3500);
-}
-
-function awardXP(amount, reason) {
-  const oldXP = state.xp;
-  state.xp = Math.min(100, state.xp + amount);
-  const earned = state.xp - oldXP;
-
-  if (earned > 0) {
-    addLog("+" + earned + " XP — " + reason);
-    showToast("EXPERIENCE EARNED", "+" + earned + " XP: " + reason);
-  }
-
-  renderProgress();
-  saveState();
-}
-
-function markTaskDone(id, done = true) {
-  const task = document.getElementById(id);
-  if (task) task.classList.toggle("done", done);
-}
-
-function renderProgress() {
-  $("#xpValue").textContent = state.xp;
-  $("#xpFill").style.width = state.xp + "%";
-  $("#xpNote").textContent =
-    state.xp >= 100
-      ? "Maximum demo XP reached!"
-      : (100 - state.xp) + " XP until the next milestone.";
-
-  $("#rankText").textContent =
-    state.xp >= 100 ? "CELL ESCAPE ARTIST" :
-    state.xp >= 50 ? "SKILLED INVESTIGATOR" :
-    state.xp >= 20 ? "JUNIOR ESCAPE ARTIST" :
-    "ROOKIE ESCAPE ARTIST";
-
-  markTaskDone("taskInspect", state.found.includes("bed") && state.found.includes("window"));
-  markTaskDone("taskCode", state.codeComplete);
-  markTaskDone("taskDesk", state.found.includes("desk"));
-  markTaskDone("taskDoor", state.doorUnlocked);
-
-  $("#levelStatus").textContent =
-    state.escaped ? "COMPLETED" :
-    state.doorUnlocked ? "EXIT OPEN" :
-    "IN PROGRESS";
-
-  $("#sceneStatus").textContent =
-    state.escaped ? "ESCAPE COMPLETE" :
-    state.doorUnlocked ? "EXIT UNLOCKED" :
-    (5 - state.found.length) + " OBJECTS UNDISCOVERED";
-
-  renderInventory();
-  saveState();
-}
-
-function renderInventory() {
-  const container = $("#inventoryList");
-  container.replaceChildren();
-
-  if (state.inventory.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "object-entry";
-
-    const icon = document.createElement("div");
-    icon.className = "icon";
-    icon.textContent = "□";
-
-    const details = document.createElement("div");
-    const title = document.createElement("strong");
-    title.textContent = "Empty inventory";
-    const subtitle = document.createElement("small");
-    subtitle.textContent = "Investigate objects to find clues.";
-
-    details.append(title, subtitle);
-    empty.append(icon, details);
-    container.append(empty);
-  } else {
-    state.inventory.forEach((item) => {
-      const data = Object.values(OBJECTS).find((obj) => obj.item === item);
-
-      const row = document.createElement("div");
-      row.className = "object-entry found";
-
-      const icon = document.createElement("div");
-      icon.className = "icon";
-      icon.textContent = data ? data.icon : "▣";
-
-      const details = document.createElement("div");
-      const title = document.createElement("strong");
-      title.textContent = item;
-      const subtitle = document.createElement("small");
-      subtitle.textContent = "Clue collected";
-
-      const status = document.createElement("span");
-      status.className = "state";
-      status.textContent = "FOUND";
-
-      details.append(title, subtitle);
-      row.append(icon, details, status);
-      container.append(row);
-    });
-  }
-
-  $("#inventoryCount").textContent =
-    state.inventory.length + (state.inventory.length === 1 ? " ITEM" : " ITEMS");
-}
-
-function renderLog() {
-  const container = $("#logList");
-  container.replaceChildren();
-
-  if (!state.logs.length) {
-    const empty = document.createElement("p");
-    empty.className = "log-empty";
-    empty.textContent = "Your adventure has begun. Discoveries will appear here.";
-    container.append(empty);
-    return;
-  }
-
-  state.logs.forEach((entry) => {
-    const row = document.createElement("div");
-    row.className = "log-line";
-
-    const time = document.createElement("span");
-    time.textContent = entry.time;
-
-    const message = document.createElement("p");
-    message.textContent = entry.message;
-
-    row.append(time, message);
-    container.append(row);
-  });
-}
-
-function addItem(item) {
-  if (!item || state.inventory.includes(item)) return false;
-  state.inventory.push(item);
-  return true;
-}
-
-function investigate(key) {
-  const data = OBJECTS[key];
-  if (!data) return;
-
-  activeObject = key;
-  lastFocusedElement = document.activeElement;
-
-  $("#modalTitle").textContent = data.title;
-  $("#modalDescription").textContent = data.description;
-  $("#modalFeedback").textContent = "";
-  $("#modalContent").replaceChildren();
-  $("#modalActions").replaceChildren();
-
-  if (key === "door") {
-    if (state.escaped) {
-      $("#modalDescription").textContent =
-        "The door stands open. You have completed this demo escape mission.";
-      addModalButton("MISSION COMPLETE", "primary", closeModal);
-    } else if (state.doorUnlocked) {
-      $("#modalDescription").textContent =
-        "The keypad turns green and the cell door slides open. You have a clear path out.";
-      addModalButton("ESCAPE THE CELL →", "primary", completeEscape);
-    } else {
-      const label = document.createElement("label");
-      label.htmlFor = "accessCode";
-      label.textContent = "ENTER FOUR-DIGIT ACCESS CODE";
-
-      const input = document.createElement("input");
-      input.className = "modal-input";
-      input.id = "accessCode";
-      input.inputMode = "numeric";
-      input.maxLength = 4;
-      input.placeholder = "••••";
-      input.autocomplete = "off";
-
-      const unlock = document.createElement("button");
-      unlock.type = "button";
-      unlock.className = "action-button primary";
-      unlock.textContent = "UNLOCK DOOR";
-      unlock.addEventListener("click", () => attemptUnlock(input.value));
-
-      input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") attemptUnlock(input.value);
-      });
-
-      $("#modalContent").append(label, input);
-      $("#modalActions").append(unlock);
-
-      if (!state.found.includes("desk")) {
-        $("#modalFeedback").textContent =
-          "Hint: search the desk for the access card.";
-      }
-    }
-  } else if (key === "computer") {
-    $("#modalDescription").textContent =
-      "The terminal is online. Your Python training console is ready below.";
-    addModalButton("OPEN PYTHON TERMINAL ↗", "primary", () => {
-      closeModal();
-      $("#terminal").scrollIntoView({ behavior: "smooth", block: "start" });
-      $("#terminalInput").focus({ preventScroll: true });
-    });
-  } else {
-    const clue = document.createElement("p");
-    clue.className = "modal-description";
-    clue.textContent = data.clue;
-    $("#modalContent").append(clue);
-
-    if (state.found.includes(key)) {
-      $("#modalFeedback").textContent = "You have already investigated this object.";
-    } else {
-      addModalButton("COLLECT CLUE", "primary", () => collectClue(key));
-    }
-  }
-
-  addModalButton("CLOSE", "secondary", closeModal);
-  $("#modalBackdrop").classList.add("open");
-
-  const firstInput = $("#modalContent input");
-  if (firstInput) firstInput.focus();
-  else $("#modalActions button")?.focus();
-}
-
-function addModalButton(text, style, action) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "action-button " + style;
-  button.textContent = text;
-  button.addEventListener("click", action);
-  $("#modalActions").append(button);
-}
-
-function closeModal() {
-  $("#modalBackdrop").classList.remove("open");
-  activeObject = null;
-
-  if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
-    lastFocusedElement.focus({ preventScroll: true });
-  }
-}
-
-function collectClue(key) {
-  const data = OBJECTS[key];
-  if (!data || state.found.includes(key)) return;
-
-  state.found.push(key);
-  addItem(data.item);
-  closeModal();
-
-  const rewards = { bed: 10, window: 5, desk: 20, computer: 10 };
-  awardXP(rewards[key] || 5, "Investigated " + data.title.toLowerCase());
-
-  addLog(data.clue);
-  renderProgress();
-
-  showToast("CLUE DISCOVERED", data.item + " added to your inventory.");
-
-  if (key === "desk") {
-    showToast("ACCESS CODE FOUND", "Your access code is 4312. Investigate the door.");
-  }
-}
-
-function attemptUnlock(rawCode) {
-  const code = String(rawCode).trim();
-
-  if (!/^\d{4}$/.test(code)) {
-    $("#modalFeedback").textContent = "Enter a valid four-digit code.";
-    return;
-  }
-
-  if (!state.found.includes("desk")) {
-    $("#modalFeedback").textContent =
-      "You haven't found the access code yet. Investigate the desk first.";
-    return;
-  }
-
-  if (code !== "4312") {
-    $("#modalFeedback").textContent = "ACCESS DENIED. Check the code on your access card.";
-    return;
-  }
-
-  state.doorUnlocked = true;
-  closeModal();
-  awardXP(20, "Unlocked the containment door");
-  addLog("The cell door is now unlocked.");
-  renderProgress();
-  showToast("ACCESS GRANTED", "The door is unlocked. Investigate it again to escape.");
-}
-
-function completeEscape() {
-  if (!state.doorUnlocked || state.escaped) {
-    closeModal();
-    return;
-  }
-
-  state.escaped = true;
-  closeModal();
-  awardXP(25, "Completed Chapter 01");
-  addLog("MISSION COMPLETE — You escaped the first cell.");
-  renderProgress();
-
-  showToast("CHAPTER COMPLETE", "You escaped the cell! Chapter 01 completed.");
-
-  $("#sceneStatus").textContent = "ESCAPE COMPLETE";
-  $("#levelStatus").textContent = "COMPLETED";
-  const doorButton = document.querySelector('[data-object="door"]');
-if (doorButton) doorButton.disabled = true;
-}
-
-function terminalPrint(text, className = "") {
-  const output = $("#terminalOutput");
-  const line = document.createElement("div");
-  if (className) line.className = className;
-  line.textContent = text;
-  output.append(line);
-  output.scrollTop = output.scrollHeight;
-}
-
-function runCommand(raw) {
-  const command = raw.trim();
-  if (!command) return;
-
-  terminalPrint(">>> " + command, "terminal-line");
-
-  const normalized = command.toLowerCase();
-
-  if (normalized === "help") {
-    terminalPrint("AVAILABLE COMMANDS:");
-    terminalPrint('print("I will escape!") — complete your first Python task');
-    terminalPrint("look — inspect your surroundings");
-    terminalPrint("inventory — display collected items");
-    terminalPrint("status — show your current progress");
-    terminalPrint("clear — clear the terminal");
-    terminalPrint("hint — receive a mission hint");
-  } else if (normalized === "look") {
-    terminalPrint("You are in Cell 001. A bed, barred window, desk, computer, and locked door are visible.");
-    terminalPrint("Tap objects in the room to investigate them.");
-  } else if (normalized === "inventory") {
-    terminalPrint(
-      state.inventory.length
-        ? "INVENTORY: " + state.inventory.join(", ")
-        : "Your inventory is empty. Investigate the room to collect clues."
-    );
-  } else if (normalized === "status") {
-    terminalPrint("XP: " + state.xp + "/100");
-    terminalPrint("Discovered objects: " + state.found.length + "/4");
-    terminalPrint("Python task: " + (state.codeComplete ? "COMPLETED" : "INCOMPLETE"));
-    terminalPrint("Door: " + (state.doorUnlocked ? "UNLOCKED" : "LOCKED"));
-  } else if (normalized === "clear") {
-    $("#terminalOutput").replaceChildren();
-    terminalPrint("ESCAPE OS [Version 1.0]");
-    terminalPrint("Terminal cleared. Type help for commands.");
-    return;
-  } else if (normalized === "hint") {
-    terminalPrint(
-      state.codeComplete
-        ? "Next: investigate the desk, collect the access card, and unlock the door."
-        : 'Try print("I will escape!") to complete your first coding task.'
-    );
-  } else if (isCorrectPrintCommand(command)) {
-    terminalPrint("I will escape!", "terminal-success");
-
-    if (!state.codeComplete) {
-      state.codeComplete = true;
-      awardXP(25, "Completed the first Python challenge");
-      addLog("Python mission completed: print statement executed.");
-      renderProgress();
-      showToast("PYTHON CHALLENGE COMPLETE", "You earned XP for your first coding task.");
-    } else {
-      terminalPrint("Challenge already completed. Try another command from help.");
-    }
-  } else {
-    terminalPrint("Command not recognized by this training simulator.", "terminal-error");
-    terminalPrint('Tip: try print("I will escape!") or enter help.');
-  }
-}
-
-function isCorrectPrintCommand(command) {
-  // Accept common quote styles and optional spaces around the argument.
-  return /^print\s*\(\s*(["'])I will escape!\1\s*\)\s*;?$/.test(command);
-}
-
-$("#terminalForm").addEventListener("submit", (event) => {
-  event.preventDefault();
-  const input = $("#terminalInput");
-  runCommand(input.value);
-  input.value = "";
-  input.focus();
-});
-
-document.querySelectorAll("[data-command]").forEach((button) => {
-  button.addEventListener("click", () => {
-    const command = button.dataset.command;
-    $("#terminalInput").value = command;
-    runCommand(command);
-    $("#terminalInput").value = "";
-  });
-});
-
-document.querySelectorAll("[data-object]").forEach((button) => {
-  button.addEventListener("click", () => investigate(button.dataset.object));
-});
-
-$("#closeModal").addEventListener("click", closeModal);
-
-$("#modalBackdrop").addEventListener("click", (event) => {
-  if (event.target === $("#modalBackdrop")) closeModal();
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && $("#modalBackdrop").classList.contains("open")) {
-    closeModal();
-  }
-});
-
-$("#resetButton").addEventListener("click", () => {
-  const confirmed = window.confirm(
-    "Reset your game progress, inventory, clues, and XP? This cannot be undone."
-  );
-
-  if (!confirmed) return;
-
-  state = structuredCloneSafe(INITIAL_STATE);
-  saveState();
-  renderProgress();
-  renderLog();
-
-  $("#terminalOutput").replaceChildren();
-  terminalPrint("ESCAPE OS [Version 1.0]");
-  terminalPrint("Type help to see available commands.");
-  terminalPrint('Mission: make the terminal print "I will escape!"');
-
-  showToast("GAME RESET", "Your prison adventure has restarted.");
-});
-
-$("#year").textContent = new Date().getFullYear();
-  /* ==========================================
-   2D STICKMAN MOVEMENT + PLATFORM CHALLENGE
-========================================== */
-
-const stickman = $("#stickman");
-const gameRoom = document.querySelector(".room");
-const modeButton = $("#modeButton");
-const controlHint = $("#controlHint");
-const platformExit = $("#platformExit");
-
-let gameMode = "explore";
-let playerX = 48;
-let playerY = 0;
-let velocityY = 0;
-let grounded = true;
-
-const keys = {
-  left: false,
-  right: false
-};
-
-const PLAYER_SPEED = 3.2;
-const GRAVITY = 0.65;
-const JUMP_POWER = 10.5;
-
-function updateStickman() {
-  stickman.style.left = playerX + "%";
-
-  if (gameMode === "explore") {
-    stickman.style.bottom = "27%";
-    stickman.style.transform = "translateX(-50%)";
-  } else {
-    stickman.style.bottom = `calc(0px + ${playerY}px)`;
-    stickman.style.transform = "translateX(-50%)";
-  }
-}
-
-function setWalking(active) {
-  stickman.classList.toggle("walking", active);
-}
-
-function jump() {
-  if (gameMode === "explore") {
-    showToast(
-      "EXPLORATION MODE",
-      "Switch to Platform Mode to jump between platforms."
-    );
-    return;
-  }
-
-  if (grounded) {
-    velocityY = JUMP_POWER;
-    grounded = false;
-  }
-}
-
-function movePlayer(direction) {
-  if (direction === "left") {
-    playerX -= PLAYER_SPEED;
-  }
-
-  if (direction === "right") {
-    playerX += PLAYER_SPEED;
-  }
-
-  playerX = Math.max(5, Math.min(95, playerX));
-
-  updateStickman();
-}
-
-function setMode(mode) {
-  gameMode = mode;
-  keys.left = false;
-  keys.right = false;
-  setWalking(false);
-
-  if (mode === "platform") {
-    gameRoom.classList.add("platform-mode");
-    modeButton.textContent = "RETURN TO EXPLORATION";
-    controlHint.textContent =
-      "Reach the platforms and jump toward the EXIT marker.";
-
-    playerX = 8;
-    playerY = 0;
-    velocityY = 0;
-    grounded = true;
-
-    showToast(
-      "PLATFORM CHALLENGE",
-      "Move right and jump onto the platforms."
-    );
-  } else {
-    gameRoom.classList.remove("platform-mode");
-    modeButton.textContent = "ENTER PLATFORM MODE";
-    controlHint.textContent =
-      "Use LEFT/RIGHT or A/D. Press SPACE to jump in Platform Mode.";
-
-    playerX = 48;
-    playerY = 0;
-    velocityY = 0;
-    grounded = true;
-  }
-
-  updateStickman();
-}
-
-function platformPhysics() {
-  if (gameMode !== "platform") return;
-
-  const roomHeight = gameRoom.clientHeight;
-  const floorHeight = roomHeight * 0.29;
-  const playerHeight = stickman.offsetHeight;
-
-  const previousY = playerY;
-
-  velocityY -= GRAVITY;
-  playerY += velocityY;
-
-  if (playerY <= 0) {
-    playerY = 0;
-    velocityY = 0;
-    grounded = true;
-  }
-
-  // Land on platforms when falling through their top surface.
-  const platforms = document.querySelectorAll(".platform");
-
-  platforms.forEach((platform) => {
-    const platformRect = platform.getBoundingClientRect();
-    const roomRect = gameRoom.getBoundingClientRect();
-
-    const platformLeft =
-      ((platformRect.left - roomRect.left) / roomRect.width) * 100;
-
-    const platformRight =
-      ((platformRect.right - roomRect.left) / roomRect.width) * 100;
-
-    const platformHeight =
-      roomRect.bottom - platformRect.bottom - floorHeight;
-
-    const playerLeft = playerX - 2;
-    const playerRight = playerX + 2;
-
-    const wasAbove = previousY >= platformHeight;
-    const isFalling = velocityY <= 0;
-    const overlaps =
-      playerRight > platformLeft &&
-      playerLeft < platformRight;
-
-    if (
-      isFalling &&
-      wasAbove &&
-      playerY <= platformHeight &&
-      overlaps
-    ) {
-      playerY = platformHeight;
-      velocityY = 0;
-      grounded = true;
-    }
-  });
-
-  // Keep the player inside the visible room.
-  const maximumHeight = roomHeight - floorHeight - playerHeight;
-
-  if (playerY > maximumHeight) {
-    playerY = maximumHeight;
-    velocityY = 0;
-  }
-
-  // Check whether the player reaches the exit marker.
-  const exitLeft = 86;
-
-  if (playerX >= exitLeft && playerY > roomHeight * 0.2) {
-    showToast(
-      "PLATFORM CHECKPOINT",
-      "You reached the exit marker! More escape levels can be added next."
-    );
-
-    playerX = 82;
-    playerY = 0;
-    velocityY = 0;
-    grounded = true;
-  }
-
-  updateStickman();
-}
-
-let lastFrameTime = 0;
-
-function gameLoop(timestamp) {
-  if (!lastFrameTime) lastFrameTime = timestamp;
-
-  const delta = Math.min((timestamp - lastFrameTime) / 16.67, 2);
-  lastFrameTime = timestamp;
-
-  if (keys.left) movePlayer("left");
-  if (keys.right) movePlayer("right");
-
-  if (gameMode === "platform") {
-    platformPhysics();
-  }
-
-  setWalking(keys.left || keys.right);
-  requestAnimationFrame(gameLoop);
-}
-
-function bindHoldButton(buttonId, direction) {
-  const button = $("#" + buttonId);
-
-  const start = (event) => {
-    event.preventDefault();
-    keys[direction] = true;
-  };
-
-  const stop = () => {
-    keys[direction] = false;
-  };
-
-  button.addEventListener("pointerdown", start);
-  button.addEventListener("pointerup", stop);
-  button.addEventListener("pointerleave", stop);
-  button.addEventListener("pointercancel", stop);
-  button.addEventListener("contextmenu", (event) => {
-    event.preventDefault();
-  });
-}
-
-bindHoldButton("moveLeft", "left");
-bindHoldButton("moveRight", "right");
-
-$("#jumpButton").addEventListener("click", jump);
-
-modeButton.addEventListener("click", () => {
-  setMode(gameMode === "explore" ? "platform" : "explore");
-});
-
-document.addEventListener("keydown", (event) => {
-  if (
-    event.target instanceof HTMLInputElement ||
-    event.target instanceof HTMLTextAreaElement
-  ) {
-    return;
-  }
-
-  if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
-    keys.left = true;
-    event.preventDefault();
-  }
-
-  if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
-    keys.right = true;
-    event.preventDefault();
-  }
-
-  if (event.code === "Space" && gameMode === "platform") {
-    event.preventDefault();
-    jump();
-  }
-});
-
-document.addEventListener("keyup", (event) => {
-  if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
-    keys.left = false;
-  }
-
-  if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
-    keys.right = false;
-  }
-});
-
-window.addEventListener("blur", () => {
-  keys.left = false;
-  keys.right = false;
-  setWalking(false);
-});
-
-updateStickman();
-requestAnimationFrame(gameLoop);
-
-/* Restore a saved session. */
-renderProgress();
-renderLog();
-
-if (state.codeComplete) {
-  terminalPrint("Previously completed: print challenge.");
-}
-if (state.escaped) {
-  terminalPrint("CHAPTER 01 COMPLETED — Welcome back, escape artist.", "terminal-success");
-}
-  /* ===== 2D STICKMAN CHARACTER ===== */
+/* ================= STICKMAN ================= */
 
 .stickman {
   position: absolute;
   z-index: 10;
   left: 48%;
   bottom: 27%;
-  width: 46px;
-  height: 82px;
+  width: 38px;
+  height: 72px;
   transform: translateX(-50%);
   pointer-events: none;
-  transition: left 0.08s linear;
   filter: drop-shadow(0 0 7px #ff9b5440);
 }
 
@@ -1682,7 +508,7 @@ if (state.escaped) {
   overflow: visible;
 }
 
-.stickman .body-part {
+.body-part {
   fill: none;
   stroke: #fff1e7;
   stroke-width: 4;
@@ -1690,29 +516,29 @@ if (state.escaped) {
   stroke-linejoin: round;
 }
 
-.stickman .head {
+.head {
   fill: #ffb878;
   stroke: #fff1e7;
   stroke-width: 2;
 }
 
 .stickman.walking .leg-left {
-  animation: legLeft .22s infinite alternate;
+  animation: legLeft .2s infinite alternate;
   transform-origin: 23px 57px;
 }
 
 .stickman.walking .leg-right {
-  animation: legRight .22s infinite alternate;
+  animation: legRight .2s infinite alternate;
   transform-origin: 23px 57px;
 }
 
 .stickman.walking .arm-left {
-  animation: armLeft .22s infinite alternate;
+  animation: armLeft .2s infinite alternate;
   transform-origin: 23px 35px;
 }
 
 .stickman.walking .arm-right {
-  animation: armRight .22s infinite alternate;
+  animation: armRight .2s infinite alternate;
   transform-origin: 23px 35px;
 }
 
@@ -1732,64 +558,12 @@ if (state.escaped) {
   to { transform: rotate(22deg); }
 }
 
-/* ===== GAME CONTROLS ===== */
-
-.game-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px;
-  border-top: 1px solid var(--border);
-  background: #100b0e;
-}
-
-.control-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.game-control {
-  min-width: 48px;
-  min-height: 46px;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--orange-light);
-  background: #291821;
-  font: 11px "Space Mono", monospace;
-  touch-action: manipulation;
-  user-select: none;
-}
-
-.game-control:active {
-  background: var(--maroon);
-  transform: scale(.96);
-}
-
-.game-control.active {
-  background: var(--orange);
-  color: #211016;
-}
-
-.control-hint {
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.6;
-}
-
-/* ===== PLATFORM CHALLENGE ===== */
-
-.room.platform-mode {
-  background: linear-gradient(#271b28 0%, #171116 100%);
-}
+/* ================= PLATFORM MODE ================= */
 
 .platform {
   display: none;
   position: absolute;
-  z-index: 4;
+  z-index: 5;
   height: 13px;
   border: 2px solid #98616b;
   border-radius: 4px;
@@ -1803,29 +577,29 @@ if (state.escaped) {
 }
 
 .platform-one {
-  left: 18%;
-  bottom: 24%;
-  width: 23%;
+  left: 17%;
+  bottom: 30%;
+  width: 22%;
 }
 
 .platform-two {
-  left: 48%;
-  bottom: 39%;
+  left: 45%;
+  bottom: 44%;
   width: 22%;
 }
 
 .platform-three {
   right: 4%;
-  bottom: 55%;
+  bottom: 58%;
   width: 18%;
 }
 
 .platform-exit {
   display: none;
   position: absolute;
-  z-index: 5;
-  right: 5%;
-  bottom: 62%;
+  z-index: 6;
+  right: 4%;
+  bottom: 65%;
   padding: 8px;
   border: 1px solid var(--orange);
   border-radius: 7px;
@@ -1843,16 +617,1008 @@ if (state.escaped) {
 .platform-mode .terminal-object,
 .platform-mode .window-object,
 .platform-mode .door-object {
-  opacity: .18;
+  opacity: .12;
   pointer-events: none;
 }
 
+.interaction-prompt {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  bottom: 8%;
+  transform: translateX(-50%);
+  padding: 8px 10px;
+  border: 1px solid #ffb87b80;
+  border-radius: 8px;
+  color: #24140e;
+  background: var(--orange-light);
+  white-space: nowrap;
+  font: 9px "Space Mono", monospace;
+}
+
+.interaction-prompt.show {
+  display: block;
+}
+
+.room-hint {
+  position: absolute;
+  z-index: 12;
+  left: 12px;
+  bottom: 12px;
+  max-width: 75%;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: #e7cbd0;
+  background: #160e12df;
+  font: 8px "Space Mono", monospace;
+  pointer-events: none;
+}
+
+.pause-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  place-items: center;
+  color: var(--orange-light);
+  background: #100b0ed9;
+  font: 14px "Space Mono", monospace;
+}
+
+.pause-overlay.show {
+  display: grid;
+}
+
+/* ================= CONTROLS ================= */
+
+.game-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 13px;
+  border-top: 1px solid var(--border);
+  background: #100b0e;
+}
+
+.control-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.game-control {
+  min-height: 43px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--orange-light);
+  background: #291821;
+  font: 9px "Space Mono", monospace;
+  touch-action: none;
+  user-select: none;
+}
+
+.game-control:active {
+  color: #211016;
+  background: var(--orange);
+}
+
+.control-hint {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.scene-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font: 8px "Space Mono", monospace;
+}
+
+.scene-footer strong {
+  color: var(--orange-light);
+  font-weight: 400;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar {
+  display: grid;
+  gap: 14px;
+}
+
+.side-body {
+  padding: 15px;
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  color: var(--orange-light);
+  background: #ff9b5412;
+  font-size: 20px;
+}
+
+.player-name {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.player-rank {
+  margin-top: 5px;
+  color: var(--muted);
+  font: 8px "Space Mono", monospace;
+}
+
+.xp-pill {
+  margin-left: auto;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--orange-light);
+  font: 9px "Space Mono", monospace;
+}
+
+.xp-track {
+  height: 5px;
+  margin-top: 15px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #ffffff0d;
+}
+
+.xp-fill {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--maroon), var(--orange));
+  transition: width .3s;
+}
+
+.xp-note {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.object-list {
+  display: grid;
+  gap: 8px;
+}
+
+.object-entry {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid #ffffff0b;
+  border-radius: 9px;
+  background: #ffffff03;
+}
+
+.object-entry .icon {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--orange-light);
+  background: #ff9b5410;
+}
+
+.object-entry strong {
+  display: block;
+  font-size: 10px;
+}
+
+.object-entry small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.object-entry .state {
+  margin-left: auto;
+  color: var(--green);
+  font: 8px "Space Mono", monospace;
+}
+
+.mission-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.mission-item:last-child {
+  margin-bottom: 0;
+}
+
+.check {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid #ffffff24;
+  border-radius: 5px;
+  color: transparent;
+}
+
+.mission-item.done .check {
+  border-color: #a8cf8b66;
+  color: var(--green);
+  background: #a8cf8b13;
+}
+
+.mission-item strong {
+  font-size: 10px;
+}
+
+.mission-item p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.action-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.primary {
+  color: #25140f;
+  background: linear-gradient(135deg, var(--orange-light), var(--orange));
+}
+
+.secondary {
+  border-color: var(--border);
+  color: var(--text);
+  background: #ffffff05;
+}
+
+.full {
+  width: 100%;
+}
+
+/* ================= LEVELS ================= */
+
+.level-panel,
+.terminal-panel,
+.log-panel {
+  margin-top: 16px;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 14px;
+}
+
+.level-card {
+  min-height: 85px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  background: #ffffff04;
+  text-align: left;
+}
+
+.level-card strong {
+  display: block;
+  color: var(--text);
+  font-size: 10px;
+}
+
+.level-card small {
+  display: block;
+  margin-top: 8px;
+  font: 8px "Space Mono", monospace;
+}
+
+.level-card.unlocked {
+  border-color: #ff9b5466;
+  color: var(--orange-light);
+  background: #ff9b540c;
+}
+
+.level-card.completed {
+  border-color: #a8cf8b66;
+}
+
+.level-card:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* ================= TERMINAL ================= */
+
+.terminal-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-title {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.terminal-status {
+  color: var(--green);
+  font: 8px "Space Mono", monospace;
+}
+
+.terminal-content {
+  padding: 15px;
+}
+
+.terminal-intro {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.terminal-intro code {
+  color: var(--orange-light);
+  font-family: "Space Mono", monospace;
+}
+
+.terminal-output {
+  min-height: 110px;
+  max-height: 190px;
+  overflow: auto;
+  padding: 13px;
+  border: 1px solid #a8cf8b1c;
+  border-radius: 9px;
+  color: #d7e7d3;
+  background: #0c1210;
+  font: 10px/1.8 "Space Mono", monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.terminal-line {
+  color: var(--green);
+}
+
+.terminal-error {
+  color: #ff9999;
+}
+
+.terminal-success {
+  color: #ffd09b;
+}
+
+.terminal-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.terminal-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid #a8cf8b2b;
+  border-radius: 9px;
+  color: #cde7c4;
+  background: #0c1210;
+  font: 11px "Space Mono", monospace;
+}
+
+.terminal-help {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.command-chip {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: #d7b5c0;
+  background: #ffffff04;
+  font: 8px "Space Mono", monospace;
+}
+
+.log-body {
+  padding: 14px;
+}
+
+.log-list {
+  display: grid;
+  gap: 9px;
+}
+
+.log-line {
+  display: flex;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.log-line span {
+  color: var(--orange-light);
+  font-family: "Space Mono", monospace;
+}
+
+.log-empty {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.bottom-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 22px 0 28px;
+}
+
+.bottom-actions p {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ================= MODAL + TOAST ================= */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #080508d9;
+  backdrop-filter: blur(8px);
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal {
+  width: min(430px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid #ff9b5444;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #351e29, #160f13);
+}
+
+.modal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-top h2 {
+  font-size: 17px;
+}
+
+.close-modal {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: #ffffff05;
+  font-size: 20px;
+}
+
+.modal-description {
+  margin-top: 13px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.modal-content {
+  margin-top: 16px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--orange-light);
+  font-size: 10px;
+}
+
+.modal-input {
+  width: 100%;
+  min-height: 45px;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.modal-feedback {
+  min-height: 20px;
+  margin-top: 11px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.modal-actions button {
+  flex: 1;
+}
+
+.toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 150;
+  width: min(330px, calc(100% - 32px));
+  padding: 14px;
+  border: 1px solid #ff9b5444;
+  border-radius: 12px;
+  background: #21141bef;
+  box-shadow: 0 15px 45px #0006;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: .2s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast strong {
+  color: var(--orange-light);
+  font-size: 11px;
+}
+
+.toast p {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 19px 0;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mission-card {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .nav-inner {
+    padding: 12px 0;
+    flex-wrap: wrap;
+  }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    font-size: 10px;
+  }
+
+  .status {
+    display: none;
+  }
+
+  .heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .room {
+    height: 390px;
+    min-height: 390px;
+  }
+
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .mission-card {
+    grid-column: auto;
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .game-controls {
+    justify-content: center;
+  }
+
+  .control-group {
+    justify-content: center;
+  }
+
+  .terminal-form {
+    flex-wrap: wrap;
+  }
+
+  .terminal-form button {
+    width: 100%;
+  }
+
+  .bottom-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+
   .stickman.walking * {
     animation: none !important;
   }
-  }
-  
-</script>
-</body>
-  </html>
+}
+</style>
+</head>
+
+<body>
+<header class="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="brand">
+      <div class="brand-icon">⌘</div>
+      <div>
+        <div class="brand-name">ESCAPE THE PRISON</div>
+        <span class="brand-subtitle">PYTHON ADVENTURE</span>
+      </div>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="#room">Prison Room</a>
+      <a href="#terminal">Terminal</a>
+      <a href="#mission">Mission</a>
+      <a href="#levels">Levels</a>
+    </nav>
+
+    <div class="status">● GAME ONLINE</div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="heading">
+    <div>
+      <div class="eyebrow">LEVEL 01 · CONTAINMENT BLOCK</div>
+      <h1 id="pageTitle">THE PRISON CELL<span style="color:var(--orange)">.</span></h1>
+      <p id="pageSubtitle">Investigate the room. Collect clues. Find a way out.</p>
+    </div>
+    <div class="badge">
+      CHAPTER <span id="chapterNumber">01</span> /
+      <span id="levelStatus">IN PROGRESS</span>
+    </div>
+  </section>
+
+  <div class="game-layout">
+    <section class="glass" id="roomPanel">
+      <div class="panel-heading">
+        <h2>◈ CELL ENVIRONMENT</h2>
+        <span class="live-label">● INTERACTIVE SCENE</span>
+      </div>
+
+      <div class="room" id="gameRoom">
+        <div class="back-wall"></div>
+        <div class="ceiling-light"></div>
+        <div class="floor"></div>
+
+        <div class="room-number" id="roomNumber">BLOCK A / CELL 001</div>
+        <div class="room-warning" id="roomWarning">RESTRICTED ZONE</div>
+
+        <button class="window-object room-object" data-object="window" type="button" aria-label="Investigate window">
+          <span class="object-tip">BARRED WINDOW</span>
+        </button>
+
+        <button class="bed-object room-object" data-object="bed" type="button" aria-label="Investigate bed">
+          <span class="object-tip">OLD BED</span>
+          <span class="bed-head"></span>
+          <span class="bed-mattress"></span>
+          <span class="bed-blanket"></span>
+          <span class="bed-leg one"></span>
+          <span class="bed-leg two"></span>
+        </button>
+
+        <button class="desk-object room-object" data-object="desk" type="button" aria-label="Investigate desk">
+          <span class="object-tip">WOODEN DESK</span>
+          <span class="desk-top"></span>
+          <span class="desk-leg left"></span>
+          <span class="desk-leg right"></span>
+          <span class="desk-drawer"></span>
+        </button>
+
+        <button class="terminal-object room-object" data-object="computer" type="button" aria-label="Investigate terminal">
+          <span class="object-tip">ABANDONED TERMINAL</span>
+          <span class="terminal-screen">&gt;_</span>
+        </button>
+
+        <button class="door-object room-object" data-object="door" type="button" aria-label="Investigate cell door">
+          <span class="object-tip">LOCKED EXIT</span>
+        </button>
+
+        <div class="stickman" id="stickman" role="img" aria-label="Your stickman character">
+          <svg viewBox="0 0 46 82" aria-hidden="true">
+            <circle class="head" cx="23" cy="13" r="9"></circle>
+            <path class="body-part" d="M23 23 L23 49"></path>
+            <path class="body-part arm-left" d="M23 30 L10 42"></path>
+            <path class="body-part arm-right" d="M23 30 L36 42"></path>
+            <path class="body-part leg-left" d="M23 49 L12 70"></path>
+            <path class="body-part leg-right" d="M23 49 L34 70"></path>
+          </svg>
+        </div>
+
+        <div class="platform platform-one"></div>
+        <div class="platform platform-two"></div>
+        <div class="platform platform-three"></div>
+        <div class="platform-exit" id="platformExit">EXIT → REACH ME</div>
+
+        <div class="interaction-prompt" id="interactionPrompt">E / INTERACT</div>
+        <div class="room-hint" id="roomHint">MOVE CLOSE TO AN OBJECT, THEN INTERACT</div>
+        <div class="pause-overlay" id="pauseOverlay">GAME PAUSED</div>
+      </div>
+
+      <!-- Controls belong OUTSIDE .room but INSIDE the scene panel. -->
+      <div class="game-controls">
+        <div class="control-group">
+          <button class="game-control" id="moveLeft" type="button">◀ LEFT</button>
+          <button class="game-control" id="moveRight" type="button">RIGHT ▶</button>
+          <button class="game-control" id="jumpButton" type="button">⬆ JUMP</button>
+          <button class="game-control" id="interactButton" type="button">◎ INTERACT</button>
+        </div>
+
+        <div class="control-group">
+          <button class="game-control" id="modeButton" type="button">ENTER PLATFORM MODE</button>
+          <button class="game-control" id="pauseButton" type="button">Ⅱ PAUSE</button>
+        </div>
+
+        <p class="control-hint" id="controlHint">
+          Explore: move near an object and press INTERACT.
+          Platform mode: jump with SPACE or JUMP.
+        </p>
+      </div>
+
+      <div class="scene-footer">
+        <span>ENVIRONMENT</span>
+        <strong id="sceneStatus">0 / 5 OBJECTS DISCOVERED</strong>
+        <span id="sceneLevel">◈ LEVEL 01</span>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="glass">
+        <div class="panel-heading">
+          <h2>◈ PLAYER PROFILE</h2>
+          <span class="small-label">LOCAL SAVE</span>
+        </div>
+        <div class="side-body">
+          <div class="player-row">
+            <div class="avatar">♟</div>
+            <div>
+              <div class="player-name">The Prisoner</div>
+              <div class="player-rank" id="rankText">ROOKIE ESCAPE ARTIST</div>
+            </div>
+            <div class="xp-pill"><span id="xpValue">0</span> XP</div>
+          </div>
+          <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+          <p class="xp-note" id="xpNote">Complete tasks to earn experience.</p>
+        </div>
+      </section>
+
+      <section class="glass">
+        <div class="panel-heading">
+          <h2>▣ INVENTORY</h2>
+          <span class="small-label" id="inventoryCount">0 ITEMS</span>
+        </div>
+        <div class="side-body">
+          <div class="object-list" id="inventoryList"></div>
+        </div>
+      </section>
+
+      <section class="glass mission-card" id="mission">
+        <div class="panel-heading">
+          <h2>◈ MISSION CONTROL</h2>
+          <span class="small-label" id="missionCount">001</span>
+        </div>
+
+        <div class="side-body">
+          <div class="mission-item" id="taskInspect">
+            <span class="check">✓</span>
+            <div><strong>Inspect surroundings</strong><p>Investigate the cell objects.</p></div>
+          </div>
+          <div class="mission-item" id="taskCode">
+            <span class="check">✓</span>
+            <div><strong>Activate the terminal</strong><p>Complete the Python challenge.</p></div>
+          </div>
+          <div class="mission-item" id="taskDesk">
+            <span class="check">✓</span>
+            <div><strong>Discover the access code</strong><p>Find the clue at the desk.</p></div>
+          </div>
+          <div class="mission-item" id="taskDoor">
+            <span class="check">✓</span>
+            <div><strong>Unlock the exit</strong><p>Use the correct access code.</p></div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <section class="glass level-panel" id="levels">
+    <div class="panel-heading">
+      <h2>▦ PRISON BLOCK MAP</h2>
+      <span class="small-label">FIVE CHAPTERS</span>
+    </div>
+    <div class="level-grid" id="levelGrid"></div>
+  </section>
+
+  <section class="glass terminal-panel" id="terminal">
+    <div class="terminal-toolbar">
+      <div class="terminal-title">⌨ PYTHON TERMINAL</div>
+      <span class="terminal-status">● SAFE SIMULATOR</span>
+    </div>
+
+    <div class="terminal-content">
+      <p class="terminal-intro">
+        Enter <code>help</code> for commands. Complete the challenge using
+        <code>print("I will escape!")</code>. This is a limited training
+        simulator, not a full Python interpreter.
+      </p>
+
+      <div class="terminal-output" id="terminalOutput" role="log" aria-live="polite"></div>
+
+      <form class="terminal-form" id="terminalForm">
+        <input id="terminalInput" type="text" maxlength="180" autocomplete="off"
+          spellcheck="false" aria-label="Enter a simulated Python command"
+          placeholder='print("I will escape!")'>
+        <button class="action-button primary" type="submit">RUN COMMAND ↗</button>
+      </form>
+
+      <div class="terminal-help">
+        <button class="command-chip" type="button" data-command="help">help</button>
+        <button class="command-chip" type="button" data-command='print("I will escape!")'>print(...)</button>
+        <button class="command-chip" type="button" data-command="look">look</button>
+        <button class="command-chip" type="button" data-command="inventory">inventory</button>
+        <button class="command-chip" type="button" data-command="status">status</button>
+        <button class="command-chip" type="button" data-command="hint">hint</button>
+        <button class="command-chip" type="button" data-command="clear">clear</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="glass log-panel">
+    <div class="panel-heading">
+      <h2>▤ DISCOVERY LOG</h2>
+      <span class="small-label">RECENT EVENTS</span>
+    </div>
+    <div class="log-body">
+      <div class="log-list" id="logList" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="bottom-actions">
+    <p>
+      Progress saves in this browser when storage is available.<br>
+      Keyboard: A/D or arrows to move · Space to jump · E to interact · P to pause.
+    </p>
+    <div class="action-group">
+      <button class="action-button secondary" id="resetButton" type="button">↻ RESET GAME</button>
+      <button class="action-button secondary" id="resumeButton" type="button">▶ RESUME</button>
+      <a href="index.html" class="action-button primary">← HOME</a>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div>ESCAPE THE PRISON // PYTHON ADVENTURE</div>
+    <p>Learn to code. Solve the mystery. Find your freedom.</p>
+    <p>© <span id="year"></span> Escape the Prison</p>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="modalBackdrop" role="dialog"
+  aria-modal="true" aria-labelledby="modalTitle">
+  <section class="modal">
+    <div class="modal-top">
+      <h2 id="modalTitle">INVESTIGATION</h2>
+      <button class="close-modal" id="closeModal" type="button" aria-label="Close dialog">×</button>
+    </div>
+    <p class="modal-description" id="modalDescription"></p>
+    <div class="modal-content" id="modalContent"></div>
+    <div class="modal-feedback" id="modalFeedback" aria-live="polite"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <strong id="toastTitle">MISSION CONTROL</strong>
+  <p id="toastMessage"></p>
+  </div>
