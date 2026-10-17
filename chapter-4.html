@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#18090e">
+  <title>Chapter 4: Security Hub | Escape the Prison</title>
+  <link rel="stylesheet" href="../assets/game.css">
+</head>
+<body data-chapter="4">
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="../index.html"><span class="brand-mark">EP</span><span>ESCAPE <b>THE PRISON</b></span></a>
+    <div class="top-status"><span class="status-dot"></span> SYSTEM ONLINE</div>
+  </header>
+  <main class="game-shell">
+    <div class="game-header">
+      <div><a class="back-link" href="../index.html">← Chapter select</a><h1 class="game-title" id="gameTitle">Security Hub</h1><p class="game-subtitle">The security hub controls the last doors. You need the right access code.</p></div>
+      <div class="game-hud">
+        <div class="hud-chip"><span class="hud-label">CHAPTER</span><strong id="gameChapter">CHAPTER 04</strong></div>
+        <div class="hud-chip"><span class="hud-label">TOTAL XP</span><strong id="hudXP">0</strong></div>
+        <div class="hud-chip"><span class="hud-label">ITEMS</span><strong id="hudItems">0</strong></div>
+      </div>
+    </div>
+    <div class="game-layout">
+      <section class="room-panel glass">
+        <div class="room-scene" id="roomScene">
+          <div class="room-light"></div>
+          <button class="window-object" type="button" data-object="window" aria-label="Inspect window" title="Inspect window"></button>
+          <button class="bars" type="button" data-object="window" aria-label="Inspect bars" title="Inspect bars"></button>
+          <button class="door-object" type="button" data-object="door" aria-label="Inspect exit door" title="Inspect door">⌑</button>
+          <button class="bed-object" type="button" data-object="bed" aria-label="Inspect bed" title="Inspect bed"></button>
+          <button class="desk-object" type="button" data-object="desk" aria-label="Inspect desk" title="Inspect desk"><span></span></button>
+          <div class="stickman" id="stickman" aria-label="Player character"><span class="head"></span><span class="body"></span><span class="arm"></span><span class="leg left"></span><span class="leg right"></span></div>
+          <span class="scene-label">ROOM 04 / SECTOR 06</span><span class="scene-hint">TAP OBJECTS TO INSPECT</span>
+        </div>
+        <div class="room-controls">
+          <div class="control-group"><button class="mini-button" id="moveLeft" type="button">← Move</button><button class="mini-button" id="moveRight" type="button">Move →</button><button class="mini-button" id="inspectNearest" type="button">Inspect nearby</button></div>
+          <div class="control-group"><button class="mini-button" id="hintButton" type="button">Hint</button><button class="mini-button" id="pauseButton" type="button">Pause</button></div>
+        </div>
+        <div class="mobile-pad"><button class="mini-button" type="button" onclick="document.getElementById('moveLeft').click()">◀ LEFT</button><button class="mini-button" type="button" onclick="document.getElementById('moveRight').click()">RIGHT ▶</button></div>
+      </section>
+      <aside class="side-stack">
+        <section class="side-card glass"><h3>Mission objectives</h3><p id="objectiveText">Disable the final security layer.</p><div class="progress-track"><span id="progressFill"></span></div><div class="objective-list" id="objectiveList" style="margin-top:14px"></div><button class="button button-primary" id="completeButton" type="button" style="width:100%;margin-top:16px">Check the door</button></section>
+        <section class="side-card glass"><h3>Inventory</h3><div class="inventory-list" id="inventoryList"><span class="empty-inventory">No items found yet.</span></div></section>
+        <section class="side-card glass"><h3>Prison terminal</h3><div class="terminal"><div class="terminal-head">LOCAL CONSOLE · SIMULATED</div><div class="terminal-output" id="terminalOutput" aria-live="polite">VERIDIS PRISON OS v2.1
+Terminal ready.
+Type "help" to view commands.</div><form class="terminal-form" id="terminalForm"><span>&gt;</span><input id="terminalInput" autocomplete="off" spellcheck="false" placeholder="type a command..." aria-label="Terminal command"><button type="submit">RUN</button></form></div><p style="margin-top:10px">Try <code>help</code>, <code>hint</code>, or <code>code 0000</code>.</p></section>
+      </aside>
+    </div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"><strong id="toastTitle">MISSION CONTROL</strong><p id="toastMessage"></p></div>
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-card glass"><p class="eyebrow">MISSION UPDATE</p><h2 id="modalTitle">Chapter complete</h2><p id="modalMessage"></p><div class="modal-actions" id="modalActions"></div></div></div>
+  <script src="../assets/game.js"></script>
+</body>
+</html>
